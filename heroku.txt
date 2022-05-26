@@ -1,0 +1,11 @@
+$ heroku 
+$ heroku git:remote --app fathomless-coast-91575
+> set git remote heroku to https://git.heroku.com/fathomless-coast-91575.git
+
+
+
+$ git status 
+$ git add .
+$ git commit -am "commit_message"
+// git push 
+$ git push heroku 
