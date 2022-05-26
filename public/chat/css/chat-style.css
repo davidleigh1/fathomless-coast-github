@@ -144,6 +144,14 @@ input.connection_lost {
     text-overflow: ellipsis;
 }
 
+.disabled-link {
+    color: gray !important;
+    cursor: not-allowed !important;
+    text-decoration: none !important;
+}
+
+
+
 /* NOTIFICATONS */
 
 .toast-bottom-right {

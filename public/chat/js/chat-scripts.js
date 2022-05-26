@@ -159,6 +159,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
     // firstInput.setSelectionRange(0, firstInput.value.length);
     firstInput.focus();
 
+    /* Disable relevant link */
+    const linkToDisable = window.location.hostname.endsWith("herokuapp.com") ? "heroku" : "localhost";
+    document.getElementById(linkToDisable).removeAttribute("href");
+    document.getElementById(linkToDisable).classList.add("disabled-link");
 });
 
 /* Toast Notifications */
