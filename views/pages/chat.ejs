@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/chat/img/chat-bubble.ico">
+    <title>Websocket Real-time Chat | {tlv.works}</title>
+
+    <%- include ("../partials/header.ejs") %>
+
+    <!-- <link rel="stylesheet" href="/chat/css/bootstrap.css"> -->
+    <link rel="stylesheet" href="/chat/css/toastr.min.css">
+    <link rel="stylesheet" href="/chat/css/chat-style.css">
+
+</head>
+      
+      <body>
+      
+        <!-- %- include ("../partials/nav.ejs") % -->
+
+        <ul id="messages"></ul>
+        <div class="controls">
+            <div id="username" class="username overflow-ellipsis">
+                username
+            </div>
+            <div id="usercount" class="usercount">
+                # users
+            </div>
+            Controls here...
+        </div>
+        <form id="form" action="" autocomplete="off">
+            <!-- Added role="note" (could also have used type="search" to prevent LastPass autofilling/activating) -->
+            <input id="input" autocomplete="off" data-lpignore="true" role="note"/><button id="submitbutton">Send</button>
+        </form>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/chat/js/jquery-3.6.0.min.js"></script>
+        <script src="/chat/js/bootstrap.min.js"></script>
+        <script src="/chat/js/toastr.min.js"></script>
+        <script src="/chat/js/chat-scripts.js"></script>
+
+    </body>
+</html>
