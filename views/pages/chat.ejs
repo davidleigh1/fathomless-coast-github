@@ -21,13 +21,15 @@
 
         <ul id="messages"></ul>
         <div class="controls">
-            <div id="username" class="username overflow-ellipsis">
+            <div id="username" class="control-section start username overflow-ellipsis">
                 username
             </div>
-            <div id="usercount" class="usercount">
+            <div id="usercount" class="control-section center usercount">
                 # users
             </div>
-            Controls here...
+            <div id="usercontrols" class="control-section end usercontrols">
+                <a href="http://localhost:4000/chat/" id="local">Local</a> | <a href="https://fathomless-coast-91575.herokuapp.com/chat/" id="local">Heroku</a>
+            </div>
         </div>
         <form id="form" action="" autocomplete="off">
             <!-- Added role="note" (could also have used type="search" to prevent LastPass autofilling/activating) -->

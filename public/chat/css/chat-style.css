@@ -109,12 +109,27 @@ input.connection_lost {
     backdrop-filter: blur(10px);
 }
 
-.username {
-    font-family: monospace;
+.control-section {
     width: 33%;
     padding: 0 0.5em;
     white-space: nowrap;
     overflow: hidden;
+}
+
+.start {
+    text-align: start;
+}
+
+.center {
+    text-align: center;
+}
+
+.end {
+    text-align: end;
+}
+
+.username {
+    font-family: monospace;
 }
 
 .inline-username {
