@@ -56,13 +56,14 @@ httpServer.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 const socketChatObj = {};
 socketChatObj.activeUsers = {};
+socketChatObj.rooms = {};
 socketChatObj.fetchSockets = io.fetchSockets();
 socketChatObj.count = io.engine.clientsCount;
 socketChatObj.count2 = io.of("/").sockets.size;
 
 // export default countObject;
 
-console.log("-------------------------------------");
+console.log("---- INDEX.JS -----------------------");
 console.log("socketChatObj.activeUsers",Object.keys(socketChatObj.activeUsers).length,socketChatObj.activeUsers );
 console.log("io.engine.clientsCount:", socketChatObj.count);
 console.log("socket instances in namespace:", socketChatObj.count2);

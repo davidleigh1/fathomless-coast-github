@@ -98,9 +98,9 @@ socket.on("connect", () => {
         updateStoredSettings("last_connected_at", new Date() );
     }
 
-    console.log("LOCAL - Emitting 'client_connection' event...", getStoredSettings() );
+    console.log("LOCAL - Emitting 'client_registration' event...", getStoredSettings() );
 
-    socket.emit("client_connection", getStoredSettings() );
+    socket.emit("client_registration", getStoredSettings() );
 });
 
 socket.on("notify", function(eventObj) {

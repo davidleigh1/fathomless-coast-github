@@ -3,14 +3,16 @@ module.exports = (io, socket, socketChatObj) => {
     // const socketHelperFunctions = require("./socketHelperFunctions.js");
     require("./socketHelperFunctions.js");
 
-    console.log("connectionHandler", "socketChatObj:",socketChatObj);
+    console.log("\n\n NEW CONNECTION DETECTED!!!! \n\n")
+    console.log("connectionHandler.js", "socketChatObj:",socketChatObj);
 
     // const users = {};
     const sockets = io.fetchSockets();
 
-    const connection_msg = "Connection detected on socket: " + socket.id;
+    const connection_msg = "[SERVER EMIT] Connection detected on socket: " + socket.id;
     console.log(connection_msg);
-    console.log("Checking for matching users on that socket...");
+    console.log('socket.data{}:',socket.data);
+    // console.log("Checking for matching users on that socket...");
 
     io.emit("notify", {
         'type':'notify', 
@@ -21,12 +23,19 @@ module.exports = (io, socket, socketChatObj) => {
         'query': socket.handshake.query
     } );
     
-    console.log("Current users",socketChatObj.activeUsers,"Total users:",Object.keys(socketChatObj.activeUsers).length, "\n\n");
-    // socketHelperFunctions.getUsersArray(users);
-    getUsersArray(socketChatObj.activeUsers);
+    /* Add new user to room(s) */
+    // io.on("connection", (socket) => {
+    console.log("Adding user '"+socket.data.username+"' on socket '"+socket.id+"' to room 'general'");
+    socket.join("general");
+    // });
 
-    const clientConnectionEvent = function (settingsObj) {
-        console.log('\n\n==> client_connection:\n', settingsObj);
+    logStatus();
+
+
+    // console.log("Current users",socketChatObj.activeUsers,"Total users:",Object.keys(socketChatObj.activeUsers).length, "\n\n");
+
+    const clientRegistrationEvent = function (settingsObj) {
+        console.log('\n\n==> client_registration:\n', settingsObj);
 
         console.log("Assiging username: '",settingsObj.user_name,"' to socket.data.username for socket:", socket.id);
         socket.data.username = settingsObj.user_name;
@@ -73,12 +82,13 @@ module.exports = (io, socket, socketChatObj) => {
 
 
         }
-        console.log("\n-------------\nUsers",socketChatObj.activeUsers,"Total users:",Object.keys(socketChatObj.activeUsers).length,"\n-------------\n");
-
+        // console.log("\n-------------\nUsers",socketChatObj.activeUsers,"Total users:",Object.keys(socketChatObj.activeUsers).length,"\n-------------\n");
+        console.log("\n -- End of client_registration --");
+        logStatus();
     };
 
     const chatMessageEvent = function (msg_obj, callback) {
-        console.log("New Incoming Message from '" + socket.data.username + "':", msg_obj);
+        console.log("New Incoming Message from '" + socket.data.username + "' on socket: '"+socket.id+"':\n", msg_obj);
         callback("Server says 'got it' msg_id:"+msg_obj.msg_id);
         // console.log("New Incoming Message from '"+msg_obj.sender_name+"': " + msg_obj.content);
         io.emit('chat_message', msg_obj);
@@ -135,7 +145,7 @@ module.exports = (io, socket, socketChatObj) => {
     };
 
     socket.on("disconnect", disconnectEvent);
-    socket.on("client_connection", clientConnectionEvent);
+    socket.on("client_registration", clientRegistrationEvent);
     socket.on("chat_message", chatMessageEvent);
     // socket.on("join", joinEvent);
     // socket.on("order:read", readOrder);

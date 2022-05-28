@@ -1,6 +1,5 @@
 module.exports = (io, socket, socketChatObj) => {
-
-    console.log("socketHelperFunctions:", "socketChatObj:",socketChatObj);
+    console.log("socketHelperFunctions.js:", "socketChatObj:",socketChatObj);
 
     // const countObject = require('countObject');
     // const users = require("./socketHelperFunctions.js");
@@ -18,12 +17,7 @@ module.exports = (io, socket, socketChatObj) => {
         return socketChatObj.activeUsers[user.user_id];
     }
     generateUUID = function () {
-
         return uuidv4();
-        /* Fallback... */
-        // return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-            // (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-        // );
     }
     findUsers = function (matchKey, matchValue, returnKey) {
         console.log("findUsers()",matchKey, matchValue, returnKey);
@@ -56,6 +50,7 @@ module.exports = (io, socket, socketChatObj) => {
         }
 
         function returnOnlyRequestedElem(userObjectToReturn){
+            console.log("Found this user:",userObjectToReturn);
             if (!returnKey){
                 matchingUsers.push(userObjectToReturn);
             } else {
@@ -67,23 +62,32 @@ module.exports = (io, socket, socketChatObj) => {
     }
     getUserRooms = function (userId) {
     }
-    getUsersArray = function() {
-        const count = io.engine.clientsCount;
-        // may or may not be similar to the count of Socket instances in the main namespace, depending on your usage
-        const count2 = io.of("/").sockets.size;
 
-        // const socketsArray = io.fetchSockets();
-        // const socketsArray = io.of("/").sockets;
-
-        console.log("---- getUsersArray() ------------------");
+    logStatus = function() {
+        console.log("\n\n---- logStatus() ------------------");
         console.log("Users Array:", Object.keys(socketChatObj.activeUsers).length);
-        console.log("io.engine.clientsCount:", count);
-        console.log("socket instances in namespace:", count2);
-        console.log("Sockets:",socketChatObj.fetchSockets.length,Object.keys(socketChatObj.fetchSockets).length)
-        console.log("io.sockets.adapter.rooms:\n",io.sockets.adapter.rooms);
-        console.log("---------------------------------------");
-    }
+        console.log("io.engine.clientsCount:", io.engine.clientsCount);
+        console.log("socket instances in namespace:", io.of("/").sockets.size);
+        // console.log("Sockets:",socketChatObj.fetchSockets.length,Object.keys(socketChatObj.fetchSockets).length)
+        // console.log("io.sockets.adapter.rooms:\n",io.sockets.adapter.rooms);
 
-    // exports.getUsersArray = getUsersArray;
+        console.log("---------------");
+        // main namespace
+        console.log('const rooms = io.of("/").adapter.rooms;');
+        console.log(io.of("/").adapter.rooms);
+        console.log("---------------");
+        console.log('const sids = io.of("/").adapter.sids;');
+        console.log(io.of("/").adapter.sids);
+        console.log("---------------");
+        console.log("-- adapter.sids.forEach() -------------");
+
+            io.of("/").adapter.sids.forEach(function(value, key) {
+                // console.log(key , " = " , value);
+                console.log("Socket:",key, io.sockets.sockets.get(key).connected, io.sockets.sockets.get(key).data);
+            })
+
+
+        console.log("-----------------------------------\n\n");
+    }
 
 };
