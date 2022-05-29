@@ -76,6 +76,14 @@ input.connection_lost {
     font-size: smaller;
 }
 
+#messages > li.chat.direct {
+    background-color: #dcefff !important;
+}
+
+#messages > li.chat.history {
+    opacity: 0.5 !important;
+}
+
 #messages .message-sender {
     font-weight: bold;
     display: block;

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="icon" type="image/x-icon" href="/chat/img/chat-bubble.ico"> -->
+    <title>Websocket Real-time Chat | {tlv.works}</title>
+
+    <!-- <%- include ("../partials/header.ejs") %> -->
+
+    <link rel="stylesheet" href="/chat/css/bootstrap.css">
+    <link rel="stylesheet" href="/chat/css/toastr.min.css">
+    <link rel="stylesheet" href="/chat/css/chat-style.css">
+
+    <style>
+      html, body {
+        height: 100%;
+      }
+      
+      .jumbotron.vertical-center {
+        margin-bottom: 0; /* Remove the default bottom margin of .jumbotron */
+      }
+      
+      .vertical-center {
+        min-height: 100%;  /* Fallback for vh unit */
+        min-height: 100vh; /* You might also want to use
+                              'height' property instead.
+                              
+                              Note that for percentage values of
+                              'height' or 'min-height' properties,
+                              the 'height' of the parent element
+                              should be specified explicitly.
+        
+                              In this case the parent of '.vertical-center'
+                              is the <body> element */
+      
+        /* Make it a flex container */
+        display: -webkit-box;
+        display: -moz-box;
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex; 
+        
+        /* Align the bootstrap's container vertically */
+          -webkit-box-align : center;
+        -webkit-align-items : center;
+             -moz-box-align : center;
+             -ms-flex-align : center;
+                align-items : center;
+        
+        /* In legacy web browsers such as Firefox 9
+           we need to specify the width of the flex container */
+        width: 100%;
+        
+        /* Also 'margin: 0 auto' doesn't have any effect on flex items in such web browsers
+           hence the bootstrap's container won't be aligned to the center anymore.
+        
+           Therefore, we should use the following declarations to get it centered again */
+               -webkit-box-pack : center;
+                  -moz-box-pack : center;
+                  -ms-flex-pack : center;
+        -webkit-justify-content : center;
+                justify-content : center;
+      }
+      
+      .container {
+        /* background-color: gold; */
+      }
+    </style>
+      
+      
+      
+      
+          
+      
+
+
+</head>
+      
+      <body>
+      
+        <!-- %- include ("../partials/nav.ejs") % -->
+
+        <div class="jumbotron text-center vertical-center">
+            <div class="container">
+              <!-- <h1>fathomless-coast-github</h1> -->
+                <p>Chat is already open in another computer or browser tab.</p>
+                <p>Click <a href="/chat" class="href">here to retry</a>.</p>
+              <!-- <a type="button" class="btn btn-lg btn-default" href="https://devcenter.heroku.com/articles/getting-started-with-nodejs"><span class="glyphicon glyphicon-flash"></span> Getting Started on Heroku with Node.js</a> -->
+              <!-- <a type="button" class="btn btn-lg btn-primary" href="https://github.com/heroku/node-js-getting-started"><span class="glyphicon glyphicon-download"></span> Source on GitHub</a> -->
+            </div>
+          </div>
+
+        <!-- <ul id="messages"></ul> -->
+        <!-- <div class="controls">
+            <div id="username" class="control-section start username overflow-ellipsis">
+                username
+            </div>
+            <div id="usercount" class="control-section center usercount">
+                # users
+            </div>
+            <div id="usercontrols" class="control-section end usercontrols">
+                <a href="http://localhost:4000/chat/" id="localhost" target="_blank">Local</a> | <a href="https://fathomless-coast-91575.herokuapp.com/chat/" target="_blank" id="heroku">Heroku</a>
+            </div>
+        </div> -->
+        <!-- <form id="form" action="" autocomplete="off">
+            <input disable="disable" id="input" autocomplete="off" data-lpignore="true" role="note"/><button id="submitbutton">Send</button>
+        </form> -->
+        <!-- <script src="/socket.io/socket.io.js"></script> -->
+        <script src="/chat/js/jquery-3.6.0.min.js"></script>
+        <script src="/chat/js/bootstrap.min.js"></script>
+        <script src="/chat/js/toastr.min.js"></script>
+        <!-- <script src="/chat/js/chat-scripts.js"></script> -->
+
+    </body>
+</html>

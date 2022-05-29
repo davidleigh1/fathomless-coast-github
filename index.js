@@ -26,6 +26,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.get("/", (req, res) => res.render("pages/index"));
 app.get("/chat", (req, res) => res.render("pages/chat"));
+app.get("/no-chat", (req, res) => res.render("pages/no-chat"));
 
 /* SOCKET HANDLERS */
 /* SOURCE: https://socket.io/docs/v4/server-application-structure/ */
@@ -56,13 +57,14 @@ httpServer.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 const socketChatObj = {};
 socketChatObj.activeUsers = {};
+socketChatObj.rooms = {};
 socketChatObj.fetchSockets = io.fetchSockets();
 socketChatObj.count = io.engine.clientsCount;
 socketChatObj.count2 = io.of("/").sockets.size;
 
 // export default countObject;
 
-console.log("-------------------------------------");
+console.log("---- INDEX.JS -----------------------");
 console.log("socketChatObj.activeUsers",Object.keys(socketChatObj.activeUsers).length,socketChatObj.activeUsers );
 console.log("io.engine.clientsCount:", socketChatObj.count);
 console.log("socket instances in namespace:", socketChatObj.count2);
@@ -71,11 +73,15 @@ console.log("io.sockets.adapter.rooms:\n", io.sockets.adapter.rooms);
 console.log("-------------------------------------");
 
 /* 
-[ ] Add default room
+[X] Add default waiting room until registration approved
+[X] Add registration approval process
+[X] Ensure Usernames are unique
+
+[ ] Allow local and remote update of username (with notifications)
+[ ] Remove users (+notify) on disconnection not reconnection
 [ ] Build users page/view
 [ ] Show user status in users view
 [ ] Create additional rooms
-[ ] Allow local and remote update of username (with notifications)
 [ ] Add moment.js 
 [ ] Add room to chat message event
 [ ] Add server-side array for chat events
