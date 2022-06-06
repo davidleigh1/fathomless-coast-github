@@ -62,8 +62,8 @@ module.exports = (io, socket, socketChatObj) => {
             msg_obj.content += usersListContent;
             io.in(room).except(socket.id).emit("chat_message", msg_obj);
 
-
-
+            /* Update everyone's userlist */
+            io.in(room).emit("user_joined_room", socket.data);
         }
         
     }

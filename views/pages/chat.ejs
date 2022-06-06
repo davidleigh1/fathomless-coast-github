@@ -20,12 +20,20 @@
         <!-- %- include ("../partials/nav.ejs") % -->
 
         <ul id="messages"></ul>
-        <div class="controls">
+
+        <div id="userpanel" class="userpanel">
+            <%- include ("user-list.ejs") %>
+        </div>
+
+        <div id="controls" class="controls">
             <div id="username" class="control-section start username overflow-ellipsis">
                 username
             </div>
-            <div id="usercount" class="control-section center usercount">
-                # users
+            <div id="userlist-button" class="control-section center userlist-button">
+                Users <span id="userscount">(0)</span>
+            </div>
+            <div id="request_users" class="control-section center">
+                RequestUsers
             </div>
             <div id="usercontrols" class="control-section end usercontrols">
                 <a href="http://localhost:4000/chat/" id="localhost" target="_blank">Local</a> | <a href="https://fathomless-coast-91575.herokuapp.com/chat/" target="_blank" id="heroku">Heroku</a>
