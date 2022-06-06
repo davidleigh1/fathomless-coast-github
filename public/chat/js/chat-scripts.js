@@ -101,7 +101,7 @@ socket.on("connect", () => {
         localNotify("[LOCAL] Successful NEW connection!","success");
     } else {
         /* If we have a UUID, we know we are REconnecting */
-        localNotify("[LOCAL] Successfully (re)connected!","success");
+        // localNotify("[LOCAL] Successfully (re)connected!","success");
     }   
 
     console.log("[LOCAL] - Checking for change in socket_id. Old:", getStoredSettings("socket_id")," New:", socket.id );
@@ -213,7 +213,7 @@ socket.on("client_registration_rejected", function (rejection_reason){
         new_username = updateUsername("New username must be different from old username");
     }
     console.log("Try to reconnect...");
-    socket.emit("client_registration_request", getStoredSettings() );
+    socket.emit("client_registration_request", getStoredSettings());
 });
 
 // io.to(socket.id).emit("joined_room", {"new_room": room, "all_rooms": socket.rooms});
@@ -225,8 +225,70 @@ socket.on("joined_room", function (rooms_obj){
         return room !== socket.id;
     });
     updateStoredSettings("all_rooms",rooms_without_self);
+
+    /* Update userlist to reflect change/inclusion in room  */
+    requestUserlistUpdate();
 });
 
+
+socket.on("userlist_complete", function (user_list_object){
+    console.log("userlist_complete()",user_list_object);
+
+    /* Locate and initiate user_list{} from storage */
+    const local_user_list = localStorage.getItem("user_list") || "{}";
+    const user_list = JSON.parse(local_user_list);
+
+    console.log(user_list_object);
+
+
+    // user_list[user_data_object.user_id] = user_data_object;
+
+    /* Update userpanel */
+    // updateUserOnUserlist(user_data_object);
+
+    /* Stringify user_list{} and send it back to localStorage */
+    // localStorage.setItem('user_list', JSON.stringify(user_list));
+
+});
+
+socket.on("user_joined_room", function (user_data_object){
+    console.log("user_joined_room()",user_data_object);
+
+    /* Locate and initiate user_list{} from storage */
+    const local_user_list = localStorage.getItem("user_list") || "{}";
+    const user_list = JSON.parse(local_user_list);
+
+    /* TODO: We are updating the user details regardless but should we add validation? */
+    user_list[user_data_object.user_id] = user_data_object;
+    
+    /* Stringify user_list{} and send it back to localStorage */
+    localStorage.setItem('user_list', JSON.stringify(user_list));
+
+    /* Update userpanel */
+    updateUserList();
+
+});
+
+socket.on("user_disconnected", (payload) => {
+    const user_data_object = payload.data;
+    // localNotify("User '"+user_data_object.user_name+"' disconnected from socket: '"+user_data_object.socket_id+"'");
+    localNotify("User '"+user_data_object.user_name+"' disconnected");
+
+       /* Locate and initiate user_list{} from storage */
+       const local_user_list = localStorage.getItem("user_list") || "{}";
+       const user_list = JSON.parse(local_user_list);
+   
+       /* TODO: We are updating the user details regardless but should we add validation? */
+       user_list[user_data_object.user_id].last_disconnected_at = new Date();
+       user_list[user_data_object.user_id].local_socket_connected = false;
+       
+       /* Stringify user_list{} and send it back to localStorage */
+       localStorage.setItem('user_list', JSON.stringify(user_list));
+   
+       /* Update userpanel */
+       updateUserList();
+
+ });
 
 socket.onAny((event, ...args) => {
     console.log(`[EVENT] got event: ${event}`, args);
@@ -242,13 +304,27 @@ document.addEventListener("DOMContentLoaded", function (event) {
         // updateStoredSettings();
         updateUsername('What is your name?');
     } else {
-        localNotify("[LOCAL] Welcome back <strong>"+chat_user.user_name+"</strong>!","success");
+        // localNotify("[LOCAL] Welcome back <strong>"+chat_user.user_name+"</strong>!","success");
     }
 
+    /* Username Handlers */
     document.getElementById("username").innerHTML = "@" + getStoredSettings("user_name");
     document.getElementById("username").addEventListener("click", function(){
         updateUsername("Update Username",getStoredSettings("user_name"));
         alert("TODO: Update on server side!");
+    });
+
+    /* Userpanel Handlers */
+    // $("#userpanel").delay(2000).hide();
+    $("#userpanel").delay(2000).slideUp('fast');
+    document.getElementById("userlist-button").addEventListener("click", function(){
+        // toggleUserpanel();
+        $("#userpanel").slideToggle("fast");
+    });
+
+    document.getElementById("request_users").addEventListener("click", function(){
+        // toggleUserpanel();
+        requestUserlistUpdate();
     });
 
     /* Focus cursor on the input field */
@@ -437,7 +513,7 @@ function logChatHistory(msg_obj) {
             chat_history[relevant_room] = [];
         }
     
-        /* If we have reached max-capacity, remove oldest log */
+        /* TODO: If we have reached max-capacity, remove oldest log */
     
         /* Add the newest log */
         chat_history[relevant_room].push(msg_obj);
@@ -488,3 +564,89 @@ function postMessage(msg_obj) {
     messages.appendChild(item);
     window.scrollTo(0, document.body.scrollHeight);
 }
+
+function requestUserlistUpdate(params) {
+    console.log('socket.emit("request_userlist");')
+    socket.emit("request_userlist", getStoredSettings(), (response) => { 
+        // console.log( response );
+        server_userlist = response;
+        if (response.length > 0){
+            updateUserList(server_userlist);
+        } else {
+            console.log("Empty 'server_userlist' response");
+        }
+    });
+}
+
+function updateUserOnUserlist(user_obj) {
+    console.log("updateUserOnUserlist()", user_obj);
+
+    // TODO: FIRST FIND, REMOVE, AND UPDATE THE USER IF ALREADY EXISTS!
+
+    var useritem = document.createElement('li');
+    // useritem.innerHTML = ("<span id='"+msg_obj.msg_id+"' class='message-line "+direct_class+"' title='"+ JSON.stringify(msg_obj) +"'><span class='message-sender'>" + msg_obj.sender_name + "</span><span class='message-content'>" + msg_obj.content + "</span></span><span class='message-timestamp'>"+msg_obj.happened_at+"</span>");
+    useritem.innerHTML = JSON.stringify(user_obj);
+    // useritem.classList.add("chat");
+    // useritem.classList.add(direct_class);
+    // useritem.classList.add(history_class);
+    // if (msg_obj.sender_id == 'system'){
+        // item.classList.add("system");
+    // } else {
+    //     item.classList.add("sender-"+msg_obj.sender_id);
+    // }
+    users.appendChild(useritem);
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function updateUserList(userlist_from_server) {
+    // console.log("updateUserList()",userlist_object);
+
+    /* If we receive via function arguments - will be array */
+    if (!!userlist_from_server){
+        let new_userlist_object = {};
+        userlist_from_server.forEach(function(value) {
+            // console.log(value);
+            new_userlist_object[value.user_id] = value;
+        });
+        /* Stringify user_list{} and send it to localStorage */
+        localStorage.setItem('user_list', JSON.stringify(new_userlist_object));
+    }
+
+    /* Locate and initiate user_list{} from storage */
+    const local_user_list = localStorage.getItem("user_list") || "{}";
+    let usersListObject = JSON.parse(local_user_list);
+
+    /* TODO: We are updating the user details regardless but should we add validation? */
+
+
+    /* Update userpanel */
+    // updateUserOnUserlist(user_data_object);
+    $("#users").empty();
+    Object.keys(usersListObject).forEach(function(userListItem, key) {
+        console.log(userListItem, usersListObject[userListItem]);
+
+        var userItem = document.createElement('li');
+        userItem.innerHTML = ("<span id='userlist-"+usersListObject[userListItem].user_id+"' class='userlist-entry '>" + usersListObject[userListItem].user_name + "</span>");
+        userItem.classList.add("userline");
+        // item.classList.add(direct_class);
+        if (usersListObject[userListItem].local_socket_connected == true){
+            userItem.classList.add("connected");
+            userItem.innerHTML += ("<span class='user-status label label-success'>connected</span>");
+        } else {
+            userItem.classList.add("not-connected");
+            userItem.innerHTML += ("<span class='user-status label label-warning'>disconnected</span>");
+        }
+        $("#users").append(userItem);
+        window.scrollTo(0, document.body.scrollHeight);
+    });
+    const total_users = Object.keys(usersListObject).length;
+    const active_users = Object.keys(usersListObject).filter(function(key){ console.log(usersListObject[key]); return usersListObject[key].local_socket_connected == true; }).length;
+
+    document.getElementById("userscount").innerHTML = "(" + active_users + ")";
+
+
+
+
+    // updateStoredSettings("userlist_updated_at",new Date(),"chat_user");
+
+};

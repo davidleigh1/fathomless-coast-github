@@ -15,14 +15,15 @@ module.exports = (io, socket, socketChatObj) => {
     console.log('socket.data{} received:',socket.data);
     // console.log("Checking for matching users on that socket...");
 
-    io.emit("notify", {
-        'type':'notify', 
-        'level': 'info', 
-        'dest':'all', 
-        'content': connection_msg, 
-        'happened_at': socket.handshake.issued, 
-        'query': socket.handshake.query
-    } );
+    /* Perhaps emit only to the new User? */
+    // io.emit("notify", {
+    //     'type':'notify', 
+    //     'level': 'info', 
+    //     'dest':'all', 
+    //     'content': connection_msg, 
+    //     'happened_at': socket.handshake.issued, 
+    //     'query': socket.handshake.query
+    // } );
     
     /* Add new user to room(s) */
     // io.on("connection", (socket) => {
@@ -151,7 +152,6 @@ module.exports = (io, socket, socketChatObj) => {
         logStatus();
     };
 
-
     const chatMessageEvent = function (msg_obj, callback) {
         console.log("New Incoming Message from '" + socket.data.user_name + "' on socket: '"+socket.id+"':\n", msg_obj);
         callback("Server says 'got it' msg_id:"+msg_obj.msg_id);
@@ -161,7 +161,7 @@ module.exports = (io, socket, socketChatObj) => {
     };
 
     const disconnectEvent = (payload) => {
-        console.log("Disconnection detected on socket:",socket.id);
+        console.log("\n\n\n\nDisconnection detected on socket:",socket.id, socket.data,"\n\n\n\n");
 
         // TODO: What if returns 0 or >1 ?
         // const disconnectedUserObj = findUsers("socket_id", socket.id)[0] || {};
@@ -172,39 +172,15 @@ module.exports = (io, socket, socketChatObj) => {
         console.log(disconnection_msg, "on socket: '"+ socket.id + "'. Total users:",Object.keys(socketChatObj.activeUsers).length,"");
         
         // io.emit('info_message', disconnection_msg);
-        io.emit("notify", {'type':'notify', level: 'warning', 'dest':'all', 'content': disconnection_msg} );
+        // io.emit("notify", {'type':'notify', level: 'warning', 'dest':'all', 'content': disconnection_msg} );
+
+        io.emit("user_disconnected", {'socket_id':socket.id, 'data': socket.data } );
     };
 
-    // const joinEvent = function ({ name, room }, callback) {
-
-    //     console.log("\n\n JOIN EVENT \n\n");
- 
-    //     const { error, user } = addUser(
-    //         { id: socket.id, name, room }
-    //     );
- 
-    //     if (error) return callback(error);
- 
-    //     // Emit will send message to the user
-    //     // who had joined
-    //     socket.emit('message', { user: 'admin', text:
-    //         `${user.name},
-    //         welcome to room ${user.room}.` });
- 
-    //     // Broadcast will send message to everyone
-    //     // in the room except the joined user
-    //     socket.broadcast.to(user.room)
-    //         .emit('message', { user: "admin",
-    //         text: `${user.name}, has joined` });
- 
-    //     socket.join(user.room);
- 
-    //     io.to(user.room).emit('roomData', {
-    //         room: user.room,
-    //         users: getUsersInRoom(user.room)
-    //     });
-    //     callback();
-    // }
+    const requestUserListEvent = (payload, callback) => {
+        console.log("userlist request by...", payload);
+        callback(findMatchingSockets("user_name"));
+    };
 
     const readOrder = (orderId, callback) => {
         // ...
@@ -214,6 +190,7 @@ module.exports = (io, socket, socketChatObj) => {
     socket.on("client_registration", clientRegistrationEvent);
     socket.on("client_registration_request", clientRegistrationRequestEvent);
     socket.on("chat_message", chatMessageEvent);
+    socket.on("request_userlist", requestUserListEvent);
     // socket.on("join", joinEvent);
     // socket.on("order:read", readOrder);
 };
