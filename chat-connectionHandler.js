@@ -1,42 +1,60 @@
 module.exports = (io, socket, socketChatObj) => {
 
+    console.log("LOAD FILE: chat-connectionHandler.js");
+
     // const socketHelperFunctions = require("./socketHelperFunctions.js");
     require("./socketHelperFunctions.js");
 
-    console.log("\n\n NEW CONNECTION DETECTED!!!! \n\n",socketChatObj)
-    console.log("connectionHandler.js");
-    // console.log("connectionHandler.js", "socketChatObj:",socketChatObj);
-
-    // const users = {};
-    const sockets = io.fetchSockets();
-
-    const connection_msg = "[SERVER EMIT] Connection detected on socket: " + socket.id;
-    console.log(connection_msg);
-    console.log('socket.data{} received:',socket.data);
-    // console.log("Checking for matching users on that socket...");
-
-    /* Perhaps emit only to the new User? */
-    // io.emit("notify", {
-    //     'type':'notify', 
-    //     'level': 'info', 
-    //     'dest':'all', 
-    //     'content': connection_msg, 
-    //     'happened_at': socket.handshake.issued, 
-    //     'query': socket.handshake.query
-    // } );
+    console.log("\n\nNEW CONNECTION DETECTED!!!!\nAPP:  ", socket.handshake.query.app ,"   \n\n\n");
     
-    /* Add new user to room(s) */
-    // io.on("connection", (socket) => {
-    console.log("Adding user '"+socket.data.user_name+"' on socket '"+socket.id+"' to default room 'lobby'");
-    socket.join("lobby");
-    // });
+    // console.log("socket.data:",socket.data);
+    // console.log("socket.query:",socket.query);
+    // console.log("socket.handshake.data:",socket.handshake.data);
+    // console.log("socket.handshake.query:",socket.handshake.query);
 
-    logStatus();
+    /* Standardize for all apps */
+
+    socket.data = Object.assign(socket.data, socket.handshake.query);
+
+    console.log(">> User connection detected for app:", socket.data.app);
+
+    if ( socket.data.app == "chat" ){
+        const connection_msg = "[SERVER EMIT] Connection detected on socket: " + socket.id;
+        console.log(connection_msg);
+        console.log('socket.data{} received:',socket.data);
+        // console.log("Checking for matching users on that socket...");
+
+        /* Perhaps emit only to the new User? */
+        // io.emit("notify", {
+        //     'type':'notify', 
+        //     'level': 'info', 
+        //     'dest':'all', 
+        //     'content': connection_msg, 
+        //     'happened_at': socket.handshake.issued, 
+        //     'query': socket.handshake.query
+        // } );
+    
+        /* Add new user to room(s) */
+        // io.on("connection", (socket) => {
+        console.log("Adding user '"+socket.data.user_name+"' on socket '"+socket.id+"' to default room 'lobby'");
+        socket.join("lobby");
+        // });
+        logStatus();
+    }
+
+    if ( socket.data.app == "connect" ){
+        console.log("[Connect] user detected:", socket.data);
+        console.log("[Connect] Adding user '" + socket.data.thisPlayerName + "' on socket '" + socket.id + "' to room 'games-lobby'");
+        socket.join("games-lobby");
+        io.to(socket.id).emit("joined_games_lobby");
+        // io.to(socket.id).emit("update_games_lobby",lobby_user_count());
+        // logGamesStatus("/games_io");
+    }
 
 
-    // console.log("Current users",socketChatObj.activeUsers,"Total users:",Object.keys(socketChatObj.activeUsers).length, "\n\n");
+        // console.log("Current users",socketChatObj.activeUsers,"Total users:",Object.keys(socketChatObj.activeUsers).length, "\n\n");
 
-    const clientRegistrationEvent = function (settingsObj) {
+    const chat_clientRegistrationEvent = function (settingsObj) {
         console.log('\n\n==> client_registration:\n', settingsObj);
 
         console.log("Assiging user_name: '",settingsObj.user_name,"' to socket.data.user_name for socket:", socket.id);
@@ -92,7 +110,7 @@ module.exports = (io, socket, socketChatObj) => {
         // logStatus();
     };
 
-    const clientRegistrationRequestEvent = function (settingsObj, callback) {
+    const chat_clientRegistrationRequestEvent = function (settingsObj, callback) {
         console.log('\n\n==> client_registration_request received from ',socket.id,':\n', settingsObj);
 
         /* Check for known UUID - this is akin to a session ID */
@@ -152,7 +170,7 @@ module.exports = (io, socket, socketChatObj) => {
         logStatus();
     };
 
-    const chatMessageEvent = function (msg_obj, callback) {
+    const chat_chatMessageEvent = function (msg_obj, callback) {
         console.log("New Incoming Message from '" + socket.data.user_name + "' on socket: '"+socket.id+"':\n", msg_obj);
         callback("Server says 'got it' msg_id:"+msg_obj.msg_id);
         // console.log("New Incoming Message from '"+msg_obj.sender_name+"': " + msg_obj.content);
@@ -161,23 +179,22 @@ module.exports = (io, socket, socketChatObj) => {
     };
 
     const disconnectEvent = (payload) => {
-        console.log("\n\n\n\nDisconnection detected on socket:",socket.id, socket.data,"\n\n\n\n");
+        console.log("\n\n\n\n-------------");
+        console.log("Disconnection detected\nSocket:",socket.id, "\nPayload:" ,payload, "\nsocket.data:" ,socket.data);
+        console.log("-------------\n\n\n\n");
 
-        // TODO: What if returns 0 or >1 ?
-        // const disconnectedUserObj = findUsers("socket_id", socket.id)[0] || {};
-        const disconnectedUserObj = findMatchingSockets("socket_id", socket.id)[0] || {};
-        delete socketChatObj.activeUsers[disconnectedUserObj.user_id];
-
-        const disconnection_msg = "User '"+disconnectedUserObj.user_name+"' disconnected";
-        console.log(disconnection_msg, "on socket: '"+ socket.id + "'. Total users:",Object.keys(socketChatObj.activeUsers).length,"");
-        
-        // io.emit('info_message', disconnection_msg);
-        // io.emit("notify", {'type':'notify', level: 'warning', 'dest':'all', 'content': disconnection_msg} );
-
-        io.emit("user_disconnected", {'socket_id':socket.id, 'data': socket.data } );
+        if (socket.data.app == "chat"){
+            // TODO: What if returns 0 or >1 ?
+            // const disconnectedUserObj = findUsers("socket_id", socket.id)[0] || {};
+            const disconnectedUserObj = findMatchingSockets("socket_id", socket.id)[0] || socket.data;
+            delete socketChatObj.activeUsers[disconnectedUserObj.user_id];
+            const disconnection_msg = "User '"+disconnectedUserObj.user_name+"' disconnected";
+            console.log(disconnection_msg, "on socket: '"+ socket.id + "'. Total remaining connections:",Object.keys(io.of("/").adapter.sids).length,"");
+            io.emit("user_disconnected", {'socket_id':socket.id, 'data': socket.data } );
+        }
     };
 
-    const requestUserListEvent = (payload, callback) => {
+    const chat_requestUserListEvent = (payload, callback) => {
         console.log("userlist request by...", payload);
         callback(findMatchingSockets("user_name"));
     };
@@ -187,10 +204,10 @@ module.exports = (io, socket, socketChatObj) => {
     };
 
     socket.on("disconnect", disconnectEvent);
-    socket.on("client_registration", clientRegistrationEvent);
-    socket.on("client_registration_request", clientRegistrationRequestEvent);
-    socket.on("chat_message", chatMessageEvent);
-    socket.on("request_userlist", requestUserListEvent);
+    socket.on("client_registration", chat_clientRegistrationEvent);
+    socket.on("client_registration_request", chat_clientRegistrationRequestEvent);
+    socket.on("chat_message", chat_chatMessageEvent);
+    socket.on("request_userlist", chat_requestUserListEvent);
     // socket.on("join", joinEvent);
     // socket.on("order:read", readOrder);
 };

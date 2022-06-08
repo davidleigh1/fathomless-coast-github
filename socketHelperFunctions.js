@@ -1,5 +1,5 @@
 module.exports = (io, socket, socketChatObj) => {
-    console.log("socketHelperFunctions.js");
+    console.log("LOAD FILE: socketHelperFunctions.js");
     // console.log("socketHelperFunctions.js:", "socketChatObj:",socketChatObj);
 
     // const countObject = require('countObject');
@@ -179,6 +179,31 @@ module.exports = (io, socket, socketChatObj) => {
         console.log("--- Usernames in 'main' -----------");
         findMatchingSockets("user_name", null, "user_name");
         console.log("-----------------------------------\n\n");
+    }
+
+    logGamesStatus = function(namespace = "/") {
+        console.log("\n\n---- logGamesStatus() ------------------");
+        console.log("socket instances in namespace:", io.of(namespace).sockets.size);
+        // console.log("Sockets:",socketChatObj.fetchSockets.length,Object.keys(socketChatObj.fetchSockets).length)
+        // console.log("io.sockets.adapter.rooms:\n",io.sockets.adapter.rooms);
+
+        console.log("---------------");
+        // main namespace
+        console.log('ROOMS = io.of('+namespace+').adapter.rooms;');
+        console.log(io.of(namespace).adapter.rooms);
+        console.log("---------------");
+        console.log('USERS (sids) = io.of('+namespace+').adapter.sids;');
+        console.log(io.of(namespace).adapter.sids);
+        console.log("---------------");
+        console.log("\n\n-- EACH USER adapter.sids.forEach() -------------");
+            io.of(namespace).adapter.sids.forEach(function(value, key) {
+                // console.log(key , " = " , value);
+                console.log("Socket:",key,"\n", io.of(namespace).sockets.get(key).data);
+            })
+        console.log("-----------------------------------\n\n");
+        // console.log("--- Usernames in 'main' -----------");
+        // findMatchingSockets("user_name", null, "user_name");
+        // console.log("-----------------------------------\n\n");
     }
 
     sortArray = function(arrayToSort){

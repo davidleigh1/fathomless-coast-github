@@ -1,9 +1,11 @@
 //  nodemon app.js
+console.log("LOAD FILE: index.js");
+
 
 console.log("\n\n\n\n\n");
 console.log("-------------------------------");
 console.log(" S T A R T I N G   N O D E J S ");
-console.log(" > $ nodemon app.js");
+console.log(" > $ nodemon index.js");
 console.log("-------------------------------");
 console.log("\n\n\n");
 
@@ -27,6 +29,7 @@ app.set("view engine", "ejs");
 app.get("/", (req, res) => res.render("pages/index"));
 app.get("/chat", (req, res) => res.render("pages/chat"));
 app.get("/no-chat", (req, res) => res.render("pages/no-chat"));
+app.get("/connect", (req, res) => res.render("pages/connect"));
 
 /* SOCKET HANDLERS */
 /* SOURCE: https://socket.io/docs/v4/server-application-structure/ */
@@ -35,16 +38,27 @@ io.on("connect_error", (err) => {
     console.log(`connect_error due to ${err.message}`);
 });
 
-const connectionHandlers = require("./connectionHandler");
 const socketHelperFunctions = require("./socketHelperFunctions.js");
+const chatConnectionHandlers = require("./chat-connectionHandler");
+const gamesConnectionHandlers = require("./games-connectionHandler");
 
 const onConnection = (socket) => {
     socketHelperFunctions(io, socket, socketChatObj);
-    connectionHandlers(io, socket, socketChatObj);
+    chatConnectionHandlers(io, socket, socketChatObj);
     // chatEventHandlers(io, socket);
 };
 
 io.on("connection", onConnection);
+
+
+/* Namespace handling for games! */
+const games_io = io.of("/games_io");
+games_io.on("connection", socket => {
+  console.log("someone connected to games_io:\n", socket.handshake.query);
+  socketHelperFunctions(io, socket);
+  gamesConnectionHandlers(io, socket);
+});
+games_io.emit("hi", "everyone!");
 
 
 
@@ -64,13 +78,13 @@ socketChatObj.count2 = io.of("/").sockets.size;
 
 // export default countObject;
 
-console.log("---- INDEX.JS -----------------------");
-console.log("socketChatObj.activeUsers",Object.keys(socketChatObj.activeUsers).length,socketChatObj.activeUsers );
-console.log("io.engine.clientsCount:", socketChatObj.count);
-console.log("socket instances in namespace:", socketChatObj.count2);
-console.log("Sockets:", socketChatObj.fetchSockets.length, Object.keys(socketChatObj.fetchSockets).length);
-console.log("io.sockets.adapter.rooms:\n", io.sockets.adapter.rooms);
-console.log("-------------------------------------");
+// console.log("---- INDEX.JS -----------------------");
+// console.log("socketChatObj.activeUsers",Object.keys(socketChatObj.activeUsers).length,socketChatObj.activeUsers );
+// console.log("io.engine.clientsCount:", socketChatObj.count);
+// console.log("socket instances in namespace:", socketChatObj.count2);
+// console.log("Sockets:", socketChatObj.fetchSockets.length, Object.keys(socketChatObj.fetchSockets).length);
+// console.log("io.sockets.adapter.rooms:\n", io.sockets.adapter.rooms);
+// console.log("-------------------------------------");
 
 /* 
 [X] Add default waiting room until registration approved
