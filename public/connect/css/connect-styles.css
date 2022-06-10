@@ -1,0 +1,240 @@
+.body-wrapper {
+    position: absolute;
+    left: 50%;
+    top: 57vh;  /* Added 2% (moved down slightly) to make space for the stats bar at the top */
+    transform: translate(-50%, -50%);
+    background-color: #1d64f2;
+    padding: 15px 5px;
+    
+    /* height: 90%; */
+    /* width: 90%; */
+    max-width: 88vw;
+    width: -webkit-fill-available;
+    /* max-height: 60vh; */
+}
+
+.game-container {
+    /* flex-grow: 1; */
+    /* display: block; */
+    width: 100%;
+    height: auto;
+    /*   animation: fade .2s; */
+    /* float: none; */
+    align-self: center;
+}
+
+.flex-container {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    justify-content: space-around;
+    background-color: #1d64f2;
+    /* width: 85vw; */
+    /* height: auto;  */
+}
+.flex-item {
+    background: white;
+    margin: 0.1em;
+    padding: 0.2em;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5em;
+    text-align: center;
+    flex: 1 0 auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 3px groove #1d64f2ba;
+    /* flex: 0 0 5vw; */
+    flex: 0 0 7%;
+}
+
+/* Item can be any kind of box from here . flex/grid/block */
+.flex-item {
+    display: grid;
+    align-items: center;
+    justify-content: center;
+}
+
+.player1 {
+    border: 3px groove red;
+}
+
+.player2 {
+    border: 3px groove yellow;
+}
+
+.divTableCell {
+    /* center the cell content */
+    /* justify-content: center; */
+    /* align-items: center; */
+    /* display: flex; */
+    /* font-family: Arial; */
+    /* font-size: 1rem; */
+    /* font-weight: bold; */
+    /* background: white; */
+}
+
+span.cell_id {
+    font-size: small;
+    font-weight: lighter;
+    opacity: 0.5;
+    color: black;
+    display: none;
+}
+
+.winningCell {
+    background-color: #2bff00 !important;
+    border: 3px groove #94ff00 !important;
+}
+
+.emptyCell {
+    cursor: pointer;
+}
+
+.player1 {
+    background-color: #ce182f;
+}
+
+.player2 {
+    background-color: #fece10;
+}
+
+.thisCurrentPlayer {
+  padding: 2px 10px;
+  border-style: none;
+  border-radius: 5px;
+}
+
+.thisCurrentPlayer.player1{
+  color:white;
+}
+.thisCurrentPlayer.player2{
+  color:black;
+}
+
+.stats {
+  padding: 10px;
+  border: 1px solid gray;
+  border-radius: 10px;
+  margin: 10px;
+  background-color: aliceblue;
+  display: inline-block;
+  width: -webkit-fill-available;
+}
+
+.button_container {
+  /* border: 1px solid green; */
+  /* display: inline-block; */
+  float: right;
+}
+
+.stats_container {
+  /* border: 1px solid blue; */
+  display: block;
+  float: left;
+  display: block;
+  line-height: 2em;
+}
+
+.game_buttons {
+  /* float: right; */
+  display: block;
+}
+
+/* Overrides & Custom for Bootstrap 3.2 */
+/* Source: https://stackoverflow.com/questions/18422223/bootstrap-3-modal-vertical-position-center */
+
+* {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  -webkit-box-sizing: initial !important; /* revert to content-box */
+  -moz-box-sizing:  initial !important; /* revert to content-box */
+  box-sizing: initial !important; /* revert to content-box */
+}
+
+.modal {
+  text-align: center;
+}
+
+@media screen and (min-width: 768px) { 
+  .modal:before {
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 100%;
+  }
+}
+
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.label-comment {
+  font-weight: 100;
+  font-size: x-small;
+}
+
+.btn-block {
+  /* Required as default 100% is wider than space available */
+  width: -webkit-fill-available !important;
+}
+
+
+.winner-text {
+  font-size: xx-large;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+}
+
+.center-text {
+  text-align: center;
+}
+
+.strong, .bold-text {
+  font-weight: bold;
+}
+
+#gamePlayModalForm .form-line {
+    clear: both;
+    display: table;
+    content: " ";
+    margin-bottom: 15px;
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+
+input#share_url {
+  height: 2em;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+  cursor: text;
+  background-color: #eee;
+  opacity: 1;
+}
+
+button#copy_url_button {
+  border: 1px solid lightgray;
+  height: 2em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: copy;
+}
+
+
+#lobby-list {
+  font-family: monospace;
+  background-color: #d3d3d359;
+  border-radius: 5px;
+  margin: 0 1em;
+  line-height: 2em;
+}

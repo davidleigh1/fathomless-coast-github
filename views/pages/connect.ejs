@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Connect LIVE | tlv.works on Heroku</title>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel='stylesheet' type='text/css'>
+
+        <!-- <link href="./css/styles.css" rel="stylesheet" /> -->
+        <!-- <script src="./js/scripts.js"></script> -->
+        <link rel="stylesheet" href="/connect/css/connect-styles.css">
+    </head>
+    <body>
+        <div class="stats">
+            <div class="button_container">
+                <button type="button" class="game_buttons btn-block" id="new_game_button">New Game</button>
+                <button type="button" class="game_buttons btn-block" id="name_players_button">Settings</button>
+                <button type="button" class="game_buttons btn-block" id="game_play_button">Play</button>
+            </div>
+            <div class="stats_container">
+                <div class="stat_line">Player's turn: <span id="currentPlayer">XXX</span></div>
+                <div class="stat_line">Free spaces: <span id="availableCells">XXX</span>/<span id="totalCells">XXX</span></div>
+            </div>
+            <!-- <p>current player: <span id="currentPlayer">XXX</span></p> -->
+        </div>
+        <div class="body-wrapper">
+
+            <div class="game-container">
+                <div class="flex-container">
+                    <div id="1_6" class="flex-item divTableCell column_1 row_6 diagonal_3 emptyCell">
+                        <span class="cell_id">1_6</span>
+                    </div>
+                    <div id="2_6" class="flex-item divTableCell column_2 row_6 diagonal_4 emptyCell">
+                        <span class="cell_id">2_6</span>
+                    </div>
+                    <div id="3_6" class="flex-item divTableCell column_3 row_6 diagonal_5 emptyCell">
+                        <span class="cell_id">3_6</span>
+                    </div>
+                    <div id="4_6" class="flex-item divTableCell column_4 row_6 diagonal_6 diagonal_7 emptyCell">
+                        <span class="cell_id">4_6</span>
+                    </div>
+                    <div id="5_6" class="flex-item divTableCell column_5 row_6 diagonal_8 emptyCell">
+                        <span class="cell_id">5_6</span>
+                    </div>
+                    <div id="6_6" class="flex-item divTableCell column_6 row_6 diagonal_9 emptyCell">
+                        <span class="cell_id">6_6</span>
+                    </div>
+                    <div id="7_6" class="flex-item divTableCell column_7 row_6 diagonal_10 emptyCell">
+                        <span class="cell_id">7_6</span>
+                    </div>
+                </div>
+                
+                <div class="flex-container">
+                    <div id="1_5" class="flex-item divTableCell column_1 row_5 diagonal_2 emptyCell">
+                        <span class="cell_id">1_5</span>
+                    </div>
+                    <div id="2_5" class="flex-item divTableCell column_2 row_5 diagonal_3 emptyCell">
+                        <span class="cell_id">2_5</span>
+                    </div>
+                    <div id="3_5" class="flex-item divTableCell column_3 row_5 diagonal_4 diagonal_7 emptyCell">
+                        <span class="cell_id">3_5</span>
+                    </div>
+                    <div id="4_5" class="flex-item divTableCell column_4 row_5 diagonal_5 diagonal_8 emptyCell">
+                        <span class="cell_id">4_5</span>
+                    </div>
+                    <div id="5_5" class="flex-item divTableCell column_5 row_5 diagonal_6 diagonal_9 emptyCell">
+                        <span class="cell_id">5_5</span>
+                    </div>
+                    <div id="6_5" class="flex-item divTableCell column_6 row_5 diagonal_10 emptyCell">
+                        <span class="cell_id">6_5</span>
+                    </div>
+                    <div id="7_5" class="flex-item divTableCell column_7 row_5 diagonal_11 emptyCell">
+                        <span class="cell_id">7_5</span>
+                    </div>
+                </div>
+                
+                <div class="flex-container">
+                    <div id="1_4" class="flex-item divTableCell column_1 row_4 diagonal_1 emptyCell">
+                        <span class="cell_id">1_4</span>
+                    </div>
+                    <div id="2_4" class="flex-item divTableCell column_2 row_4 diagonal_2 diagonal_7 emptyCell">
+                        <span class="cell_id">2_4</span>
+                    </div>
+                    <div id="3_4" class="flex-item divTableCell column_3 row_4 diagonal_3 diagonal_8 emptyCell">
+                        <span class="cell_id">3_4</span>
+                    </div>
+                    <div id="4_4" class="flex-item divTableCell column_4 row_4 diagonal_4 diagonal_9 emptyCell">
+                        <span class="cell_id">4_4</span>
+                    </div>
+                    <div id="5_4" class="flex-item divTableCell column_5 row_4 diagonal_5 diagonal_10 emptyCell">
+                        <span class="cell_id">5_4</span>
+                    </div>
+                    <div id="6_4" class="flex-item divTableCell column_6 row_4 diagonal_6 diagonal_11 emptyCell">
+                        <span class="cell_id">6_4</span>
+                    </div>
+                    <div id="7_4" class="flex-item divTableCell column_7 row_4 diagonal_12 emptyCell">
+                        <span class="cell_id">7_4</span>
+                    </div>
+                </div>
+                
+                <div class="flex-container">
+                    <div id="1_3" class="flex-item divTableCell column_1 row_3 diagonal_7 emptyCell">
+                        <span class="cell_id">1_3</span>
+                    </div>
+                    <div id="2_3" class="flex-item divTableCell column_2 row_3 diagonal_1 diagonal_8 emptyCell">
+                        <span class="cell_id">2_3</span>
+                    </div>
+                    <div id="3_3" class="flex-item divTableCell column_3 row_3 diagonal_2 diagonal_9 emptyCell">
+                        <span class="cell_id">3_3</span>
+                    </div>
+                    <div id="4_3" class="flex-item divTableCell column_4 row_3 diagonal_3 diagonal_10 emptyCell">
+                        <span class="cell_id">4_3</span>
+                    </div>
+                    <div id="5_3" class="flex-item divTableCell column_5 row_3 diagonal_4 diagonal_11 emptyCell">
+                        <span class="cell_id">5_3</span>
+                    </div>
+                    <div id="6_3" class="flex-item divTableCell column_6 row_3 diagonal_5 diagonal_12 emptyCell">
+                        <span class="cell_id">6_3</span>
+                    </div>
+                    <div id="7_3" class="flex-item divTableCell column_7 row_3 diagonal_6 emptyCell">
+                        <span class="cell_id">7_3</span>
+                    </div>
+                </div>
+                
+                <div class="flex-container">              
+                    <div id="1_2" class="flex-item divTableCell column_1 row_2 diagonal_8 emptyCell">
+                        <span class="cell_id">1_2</span>
+                    </div>
+                    <div id="2_2" class="flex-item divTableCell column_2 row_2 diagonal_9 emptyCell">
+                        <span class="cell_id">2_2</span>
+                    </div>
+                    <div id="3_2" class="flex-item divTableCell column_3 row_2 diagonal_1 diagonal_10 emptyCell">
+                        <span class="cell_id">3_2</span>
+                    </div>
+                    <div id="4_2" class="flex-item divTableCell column_4 row_2 diagonal_2 diagonal_11 emptyCell">
+                        <span class="cell_id">4_2</span>
+                    </div>
+                    <div id="5_2" class="flex-item divTableCell column_5 row_2 diagonal_3 diagonal_12 emptyCell">
+                        <span class="cell_id">5_2</span>
+                    </div>
+                    <div id="6_2" class="flex-item divTableCell column_6 row_2 diagonal_4 emptyCell">
+                        <span class="cell_id">6_2</span>
+                    </div>
+                    <div id="7_2" class="flex-item divTableCell column_7 row_2 diagonal_5 emptyCell">
+                        <span class="cell_id">7_2</span>
+                    </div>
+                </div>
+                
+                <div class="flex-container">              
+                    <div id="1_1" class="flex-item divTableCell column_1 row_1 diagonal_9 emptyCell">
+                        <span class="cell_id">1_1</span>
+                    </div>
+                    <div id="2_1" class="flex-item divTableCell column_2 row_1 diagonal_10 emptyCell">
+                        <span class="cell_id">2_1</span>
+                    </div>
+                    <div id="3_1" class="flex-item divTableCell column_3 row_1 diagonal_11 emptyCell">
+                        <span class="cell_id">3_1</span>
+                    </div>
+                    <div id="4_1" class="flex-item divTableCell column_4 row_1 diagonal_1 diagonal_12 emptyCell">
+                        <span class="cell_id">4_1</span>
+                    </div>
+                    <div id="5_1" class="flex-item divTableCell column_5 row_1 diagonal_2 emptyCell">
+                        <span class="cell_id">5_1</span>
+                    </div>
+                    <div id="6_1" class="flex-item divTableCell column_6 row_1 diagonal_3 emptyCell">
+                        <span class="cell_id">6_1</span>
+                    </div>
+                    <div id="7_1" class="flex-item divTableCell column_7 row_1 diagonal_4 emptyCell">
+                        <span class="cell_id">7_1</span>
+                    </div>
+                </div>
+
+            </div><!-- /game-container -->
+        </div><!-- /body-wrapper -->
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="myModal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4 class="modal-title center">Connect</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="modal_div" class="">
+                            <span id="modal_text">Message text here</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="modal_close" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="modal_new_game" class="btn btn-primary btn-block hide" data-dismiss="modal">New Game</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+
+
+        <!-- User Settings Modal -->
+        <div class="modal fade" id="playerSettingsModal" tabindex="-1" role="dialog" aria-labelledby="playerSettingsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4 class="modal-title center">Settings</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div class="modal-body form-horizontal_X">
+                            <form id="settingsModalForm" class="form-horizontal" role="form">
+                                <div class="form-group">
+                                    <label for="player1" class="control-label_X col-xs-2">
+                                        Your name
+                                        <div class="label-comment">(Changes will only take effect in your next game)</div>
+                                    </label>
+                                    <div class="col-xs-8">
+                                    <input tabindex="1" type="text" class="form-control" id="player1_name" placeholder="Your screen name" required="required"  oninvalid="alert('Missing a valid name for Player #1');this.focus();" >
+                                    </div>
+                                </div>
+                                <!-- <div class="form-group">
+                                    <label for="player2" class="control-label_X col-xs-2">Player 2</label>
+                                    <div class="col-xs-8">
+                                    <input tabindex="2" type="text" class="form-control" id="player2_name" placeholder="Screen name for Player 2" required="required" oninvalid="alert('Missing a valid name for Player #2');this.focus();">
+                                    </div>
+                                </div> -->
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button tabindex="3" type="button" id="modal_close" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button tabindex="4" type="button" id="modal_settings_save" form="settingsModalForm" onclick="/* document.getElementById('settingsModalForm').submit() */" class="btn btn-default btn-primary">Save</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+
+
+        <!-- Game Play Modal -->
+        <div class="modal fade" id="gamePlayModal" tabindex="-1" role="dialog" aria-labelledby="gamePlayModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <!-- <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button> -->
+                        <h4 id="gamePlayModalTitle" class="modal-title center">Yalla! Let's Play!</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div class="modal-body form-horizontal_X">
+                            <form id="gamePlayModalForm" class="form-horizontal" role="form">
+
+                                <div id="gp-share-topline" class="form-group">
+                                    <div class="col-xs-10">
+                                        Share <span id="share_url_href" class="share_url_href">this link</span> with a friend:
+                                    </div>
+                                </div>
+                                <div id="gp-share-bottomline" class="form-group">
+                                    <div class="col-sm-8 col-xs-7">
+                                        <input tabindex="0" type="text" class="form-control" id="share_url" placeholder="Share URL..." readonly="readonly" value="">
+                                    </div>
+                                    <div class="col-sm-2 col-xs-2">
+                                        <button type="button" class="btn" id="copy_url_button" title="Copy" onclick="copyClipboard('share_url','copy_url_button');">Copy</button>
+                                    </div>
+                                </div>
+
+                                <div id="gp-lobby-topline" class="form-group">
+                                    <div class="col-xs-10">
+                                        or select an opponent from the Games lobby (<span id="lobby-count">#</span>):
+                                    </div>
+                                </div>
+                                <div id="gp-lobby-bottomline" class="form-group">
+                                    <div id="lobby-list" class="col-xs-10">
+                                        Loading players list...
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                    <!-- <div class="modal-footer">
+                        <button tabindex="3" type="button" id="modal_close" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button tabindex="4" type="button" id="modal_settings_save" form="settingsModalForm" onclick="/* document.getElementById('settingsModalForm').submit() */" class="btn btn-default btn-primary">Save</button>
+                    </div> -->
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+
+        <!-- Game Connection Modal -->
+        <div class="modal fade" id="gameConnectionModal" tabindex="-1" role="dialog" aria-labelledby="gameConnectionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <!-- <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button> -->
+                        <h4 id="gameConnectionModalTitle" class="modal-title center">Connecting you to <a href="/connect/" target="_self">your game</a>...</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div class="modal-body form-horizontal_X">
+                            <form id="gameConnectionModalForm" class="form-horizontal" role="form">
+
+                                <div id="gp-connection-topline" class="form-group">
+                                    <div id="joinModalInfo" class="col-xs-10">
+                                        Loading...
+                                    </div>
+                                </div>
+                                <!-- <div id="gp-lobby-bottomline" class="form-group">
+                                    <div id="lobby-list" class="col-xs-10">
+                                        Loading players list...
+                                    </div>
+                                </div> -->
+
+                            </form>
+                        </div>
+                    </div>
+                    <!-- <div class="modal-footer">
+                        <button tabindex="3" type="button" id="modal_close" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button tabindex="4" type="button" id="modal_settings_save" form="settingsModalForm" onclick="/* document.getElementById('settingsModalForm').submit() */" class="btn btn-default btn-primary">Save</button>
+                    </div> -->
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+
+
+
+
+
+
+          <!-- <button type="button" data-toggle="modal" data-target="#myModal1">Open Modal</button> -->
+          <!-- <button type="button" id="new_game_button">New Game</button> -->
+
+        <script src="/socket.io/socket.io.js"></script>  
+        <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+        <script src="/connect/js/connect-scripts.js"></script>
+        
+    </body>
+</html>
