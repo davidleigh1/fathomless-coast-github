@@ -365,6 +365,11 @@ module.exports = (io, socket, games_list) => {
 
     socket.on("request_to_join_game", function(room_id, callback){
         console.log("Request from socket:",socket.id," to join room:", room_id);
+
+        
+
+
+
         socket.join(room_id);
         socket.leave("games-lobby");
         console.log("Joined room!",socket.data, "-->", room_id);
@@ -403,6 +408,15 @@ module.exports = (io, socket, games_list) => {
         } 
 
         return callback(return_object);
+    });
+
+    socket.on("player_click", function(click_obj){
+        console.log("[EVENT] player_click - from player:",click_obj.player_name, "(socket:",socket.id,") click:\n",click_obj);
+
+        io.of("/games_io").to(click_obj.room_id).except(socket.id).emit("opponent_click",click_obj);
+
+        const return_msg = "OK! Got click: "+click_obj.clicked_cell_id
+        return return_msg
     });
 
     socket.onAny((event, ...args) => {

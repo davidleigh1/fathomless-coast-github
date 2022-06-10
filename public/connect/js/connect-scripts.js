@@ -1,12 +1,29 @@
 /* 
 [X] Check for player-name on page load
 [X]     Prompt if missing
-[ ] Check if page loaded with game_id
+[X] Check if page loaded with game_id
 [ ]     If game_id in URL - check if valid
-[ ] If game_id and player is waiting and connected - start game
+[ ] Check for expiry -- will also support server restart during game
+[X] If game_id and player is waiting and connected - start game
 [O] If no game_id, check who else is in the lobby
-[ ] 
+[X] Block move from non-current user
+[X] Emit successful move
 
+[ ] Block null
+[ ] Block duplicate usernames 
+[X] Make sound on incoming click
+[X] Glow momentarily on incoming cell
+[X] Remove settings (or remove rename)
+[ ] Check "Start game" when starting remotely
+[ ] Copy to clipboard?!
+[ ] Disable the active cursor when it's not your turn...
+[ ] Timer for each turn?
+
+[ ] Remove players from Lobby when they start a game
+[ ] Block game when ID not found or game has started --> Redirect
+[ ] Block game when exceeding max players
+[ ] Handle invite when invited from lobby
+[ ] Rematch after win/lose/draw 
 
 */
 
@@ -28,12 +45,31 @@ let connect = {
     }
 };
 
+/* Classes */
+
+/* Source: https://ourcodeworld.com/articles/read/1627/how-to-easily-generate-a-beep-notification-sound-with-javascript */
+// The browser will limit the number of concurrent audio contexts
+// So be sure to re-use them whenever you can
+const myAudioContext = new AudioContext();
+
+/**
+ * Helper function to emit a beep sound in the browser using the Web Audio API.
+ * 
+ * @param {number} duration - The duration of the beep sound in milliseconds.
+ * @param {number} frequency - The frequency of the beep sound.
+ * @param {number} volume - The volume of the beep sound.
+ * 
+ * @returns {Promise} - A promise that resolves when the beep sound is finished.
+ */
+
+
+
 /* Websockets Setup */
 
 function establishSocket(queryParamsToSend = {}) {
     queryParamsToSend.app = "connect";
     queryString = Object.keys(queryParamsToSend).map(key => key + '=' + queryParamsToSend[key]).join('&');
-    console.log(queryString);
+    // console.log(queryString);
     // const socket = io.connect("",{
     //     query: queryString
     // });
@@ -57,6 +93,10 @@ function declareSocketHanders(socket) {
         server_start_game(payload);
     });
 
+    socket.on("opponent_click", (opponent_click_obj) => {
+        server_incoming_click(opponent_click_obj);
+    });
+
     socket.onAny((event, ...args) => {
         console.log(`[EVENT] got event: ${event}`, args);
     });
@@ -65,7 +105,7 @@ function declareSocketHanders(socket) {
 }
 
 function generateGameId(functionCallback) {
-    console.log("generateGameId()");
+    // console.log("generateGameId()");
     const request_obj = {
         "app": "connect",
         "thisPlayerName": localStorage.getItem("thisPlayerName")
@@ -82,7 +122,7 @@ function updateLobbyStatsFromServer(functionCallback) {
     // TODO: Get rid of the callback and just use the emit to all users event
     // console.log("updateLobbyStatsFromServer() - Sending request event...");
     socket.emit("request_lobby_update", null, (response) => {
-        console.log("updateLobbyStatsFromServer() - response:",response);
+        // console.log("updateLobbyStatsFromServer() - response:",response);
         functionCallback(response);
         return response;
     });
@@ -94,6 +134,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     /* Initialize new game */
     // pageLoad("onready");
     updateFromLocalStorage(connect);
+    setUsername();
     updateStats();
     
     /* Handlers for buttons */
@@ -231,18 +272,20 @@ function getUrlParam(param){
 
 function pageLoad(pageLoadTrigger) {
     // http://localhost:4000/connect/?app=connect&game_id=7da23f63-65cd-4fa0-8f73-98a72e55e510&expiry=1654715622885
-    console.log("Check if URL has game_id param");
+    // console.log("Check if URL has game_id param");
     if ( getUrlParam("game_id") ){
         const game_id = getUrlParam("game_id");
         const expires_at = parseInt(getUrlParam("expiry"));
-        console.log("> Game ID found:", game_id);
-        console.log("> Expires:", expires_at, new Date(expires_at) );
-        console.log("> TimeNow:", Date.now(), new Date(Date.now()) );
+        // console.log("> Game ID found:", game_id);
+        // console.log("> Expires:", expires_at, new Date(expires_at) );
+        // console.log("> TimeNow:", Date.now(), new Date(Date.now()) );
+
         /* Ignoring expiry for now - will be valid if another user is still in the new room */
-        console.log("> Game Expired: ",  Date.now() > expires_at );
+        if ( expires_at < Date.now() ){
+            console.log("Game has Expired: ", Date.now() , expires_at, Date.now() > expires_at );
+        }
         
-        
-        console.log("TODO: Check if we have an active game at the moment (reload!)");
+        // console.log("TODO: Check if we have an active game at the moment (reload!)");
 
         setUsername();
         connect.names[1] = localStorage.getItem("thisPlayerName");
@@ -264,7 +307,7 @@ function pageLoad(pageLoadTrigger) {
         });
 
     } else {
-        console.log("TODO: No game_id param found in URL");
+        // console.log("DONE: No game_id param found in URL");
         openGamePlayModal();
     }
 }
@@ -297,18 +340,25 @@ function setUsername(setThisUsername) {
 }
 
 function server_start_game(connectObj){
-    console.log("STARTING! server_start_game()", JSON.stringify(connect), JSON.stringify(connectObj));
+    console.log("STARTING! server_start_game()");
+    // console.log("STARTING! server_start_game()", JSON.stringify(connect), JSON.stringify(connectObj));
     connect = Object.assign(connect, connectObj);
     /* Update the local connect.names object because we server it from the server as an array */
     for (let i = 0; i < connect.server_names.length; i++) {
-        console.log(i+1, connect.server_names[i]);
+        // console.log(i+1, connect.server_names[i]);
         connect.names[i+1] = connect.server_names[i];
+        if (connect.server_names[i] == connect.thisPlayerName){
+            connect.thisPlayerNumber = i+1;
+        }
     }
 
     /* In case the user is still on the URL generation page */
     if (!getUrlParam("game_id")){
         document.location.href = connect.game_url;
     }
+
+    // TODO: Required on better placement?
+    // connect.thisPlayerNumber = connect.server_names.indexof(connect.thisPlayerName);
 
     /* Hide any left over modals */
     $(".modal").modal('hide');
@@ -362,6 +412,15 @@ function start_game(trigger) {
 }
 
 function cellClick(cell_id_or_element) {
+    // console.log("cellClick()", "this:", connect.thisPlayerNumber, connect.currentPlayer, connect.thisPlayerNumber == connect.currentPlayer );
+
+    /* Assuming from now that the cellClick() function is only being called from a real, local, user click  */
+    /* Supress any click which doesn't originate from the current user */
+    if (connect.thisPlayerNumber !== connect.currentPlayer){
+        console.log("Ignoring click - it's not your turn!");
+        return false;
+    }
+
     // Generate the ID and/or Object (depending on what we get) so that we end up with both
     let clickedCellElem = cell_id_or_element;
     if (typeof cell_id_or_element == "string"){
@@ -377,14 +436,63 @@ function cellClick(cell_id_or_element) {
         connect.has_started = true;
         // Confirmed this was a valid click!
         // console.log("Valid Click Detected by currentPlayer:", connect.currentPlayer, " on cell:", cellElem.id);
-        // Update the UI (only)
-        updateCellOnValidClick(cellElem.id, connect.currentPlayer);   
-        // Analyze for implications
-        checkCellStatus(cellElem.id);
+
+        /* Send click to the server/opponent */
+        const player_click = {
+            "game_id": connect.id,
+            "room_id": connect.room_id,
+            "player_name": connect.thisPlayerName,
+            "player_number": connect.thisPlayerNumber,
+            "clicked_at": Date.now(),
+            "clicked_cell_id": clickedCellId,
+        };
+
+
+        console.log("[EMIT] player_click - player_click:",player_click);
+        socket.emit("player_click", player_click, (response) => {
+            console.log("[EMIT] player_click - response:",response);
+            // functionCallback(response);
+            // return response;
+        });
+
+
+        /* If the server acknowledges - then we process the UI update */
+            // Update the UI (only)
+            updateCellOnValidClick(cellElem.id, connect.currentPlayer);   
+            // TODO: updateCellOnValidClick(cellElemId, connect.currentPlayer);   
+            // Analyze for implications
+            checkCellStatus(cellElem.id);
+            // TODO: checkCellStatus(cellElemId);
     } else {
         // console.log("CLICK IS NOT VALID!", cellElem.id);
     }
 }
+
+function server_incoming_click(opponent_click_obj) {
+    console.log("server_incoming_click() - currentPlayer:", connect.currentPlayerLabel, "\n", "incomingClickPlayer:", opponent_click_obj.player_name, "\n", "incomingClickCell:", opponent_click_obj.clicked_cell_id );
+
+    /* Incoming clicks will ALWAYS include only the ID! */
+    const clickedCellElem = document.getElementById(opponent_click_obj.clicked_cell_id);
+    
+    // We now that regardless to what we received, cellElem is now the element and not the ID string
+    const clickedCellId = clickedCellElem.id;
+
+    const cellElemId = gravityAfterClick(clickedCellId);
+    const cellElem = document.getElementById(cellElemId);
+    
+    if ( isClickValid(cellElem.id) ){
+        connect.has_started = true;
+        // Update the UI (only)
+        updateCellOnValidClick(cellElem.id, connect.currentPlayer, true, true);   
+        // TODO: updateCellOnValidClick(cellElemId, connect.currentPlayer);   
+        // Analyze for implications
+        checkCellStatus(cellElem.id);
+        // TODO: checkCellStatus(cellElemId);
+    } else {
+        // console.log("CLICK IS NOT VALID!", cellElem.id);
+    }
+}
+
 
 function getCellColumnRow(cellId) {
     const column = cellId.split("_")[0];
@@ -443,8 +551,8 @@ function gravityAfterClick(clickedCellId) {
     return gravityElemId;
 }
 
-function isClickValid(cellId, currentPlayer) {
-    // console.log("isClickValid()", cellId, currentPlayer );
+function isClickValid(cellId) {
+    // console.log("isClickValid()", cellId );
     const cellElem = document.getElementById(cellId);
     
     // Is cell empty?
@@ -465,13 +573,29 @@ function isClickValid(cellId, currentPlayer) {
     return true;
 }
 
-function updateCellOnValidClick(cellId, currentPlayerId){
+function updateCellOnValidClick(cellId, currentPlayerId, should_animate, should_beep){
     const cellElem = document.getElementById(cellId);
     // Remove the 'emptyCell'
     cellElem.classList.remove("emptyCell");
     // Add appropriate class for the currentPlayer
     cellElem.classList.add("player"+currentPlayerId);
-    // TODO: Remove this temporary note:
+
+    /* We only want to animate/beep clicks from opponents */
+    if (should_animate == true){
+        $("#"+cellId).toggleClass("winningCell").fadeOut(200).toggleClass("winningCell").fadeIn(200).toggleClass("winningCell").fadeOut(200).toggleClass("winningCell").fadeIn(200).toggleClass("winningCell").removeClass("winningCell");
+    }
+    if (should_beep == true){
+        // Simple beep
+        playBeep(
+            // Set the duration to 0.2 second (200 milliseconds)
+            200,
+            // Set the frequency of the note to A4 (440 Hz)
+            900,
+            // Set the volume of the beep to 100%
+            20
+        );
+    }
+
 }
 
 function checkCellStatus(cellId) {
@@ -523,7 +647,19 @@ function gameWinner() {
     connect.winner.winningCells.forEach((cellId) => {
         document.getElementById(cellId).classList.add("winningCell");
     });
+
+    if (connect.winner.player == connect.thisPlayerNumber) {
+        playSound('winner');
+    }else {
+        playSound('loser');
+    }
     
+    /* TODO: This is only required when there is a sound playing! */
+    $("#myModal1").on("hidden.bs.modal", function () {
+        console.log("Stop the sound!");
+        stopSound();
+    });
+
 
     $("#modal_div").removeClass();
     $("#modal_div").addClass("winner-text");
@@ -663,8 +799,8 @@ function openSettings(requestingUser){
     // TODO: Create a user-specific version of the modal etc for online-version
 
     // Prepare the modal
-    document.getElementById("player1_name").value = connect.names[1];
-    document.getElementById("player2_name").value = connect.names[2];
+    document.getElementById("player1_name").value = connect.thisPlayerName;
+    // document.getElementById("player2_name").value = connect.names[2];
 
     // Open Modal
     $("#playerSettingsModal").modal({backdrop: 'static', keyboard: false});
@@ -704,7 +840,7 @@ function updateShareUrl(params) {
     // dl = document.location;
     // dl.origin + dl.pathname
     const shareUrl = document.location.origin + document.location.pathname + "?" + params;
-    console.log(shareUrl);
+    // console.log(shareUrl);
 
     /* Add to input field */
     $("#share_url").val(shareUrl);
@@ -735,8 +871,9 @@ function updateLobbyStats(lobbyStatsObj){
 
 function saveSettings() {
     console.log("modal_settings_save clicked! Saving now!");
-    connect.names[1] = document.getElementById("player1_name").value;
-    connect.names[2] = document.getElementById("player2_name").value;
+    connect.thisPlayerName = document.getElementById("player1_name").value;
+    connect.names[connect.thisPlayerNumber] = document.getElementById("player1_name").value;
+    // connect.names[2] = document.getElementById("player2_name").value;
     let connectObj = localStorage.getItem("connect") ? JSON.parse( localStorage.getItem("connect") ) : {};
     connectObj.names = connect.names; 
     localStorage.setItem("connect",JSON.stringify(connect));
@@ -805,4 +942,67 @@ function copyClipboard(copy_field_id, button_field_id) {
     }, 2000);
 
 
+}
+
+function playBeep(duration, frequency, volume){
+    return new Promise((resolve, reject) => {
+        // Set default duration if not provided
+        duration = duration || 200;
+        frequency = frequency || 440;
+        volume = volume || 100;
+
+        try{
+            let oscillatorNode = myAudioContext.createOscillator();
+            let gainNode = myAudioContext.createGain();
+            oscillatorNode.connect(gainNode);
+
+            // Set the oscillator frequency in hertz
+            oscillatorNode.frequency.value = frequency;
+
+            // Set the type of oscillator
+            oscillatorNode.type= "square";
+            gainNode.connect(myAudioContext.destination);
+
+            // Set the gain to the volume
+            gainNode.gain.value = volume * 0.01;
+
+            // Start audio with the desired duration
+            oscillatorNode.start(myAudioContext.currentTime);
+            oscillatorNode.stop(myAudioContext.currentTime + duration * 0.001);
+
+            // Resolve the promise when the sound is finished
+            oscillatorNode.onended = () => {
+                resolve();
+            };
+        }catch(error){
+            reject(error);
+        }
+    });
+}
+
+function playSound (event) {
+    var filename = null;
+    var folder = "./audio/";
+
+    switch (event) {
+        case "winner":
+            filename = folder + "cheering.mp3";
+            break;
+        case "loser":
+            if (Math.random() > 0.5){
+                filename = folder + "smoosh.mp3";
+            } else {
+                filename = folder + "wahwah2.mp3";
+            }
+            break;
+         default:
+            return false;
+    }
+    window.audio = new Audio(filename);
+    window.audio.play();
+}
+
+function stopSound(){
+    window.audio.pause();
+    window.audio.currentTime = 0;
 }

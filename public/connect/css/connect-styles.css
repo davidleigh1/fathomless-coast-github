@@ -171,6 +171,11 @@ span.cell_id {
   vertical-align: middle;
 }
 
+.label-comment {
+  font-weight: 100;
+  font-size: x-small;
+}
+
 .btn-block {
   /* Required as default 100% is wider than space available */
   width: -webkit-fill-available !important;
