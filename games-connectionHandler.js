@@ -366,48 +366,72 @@ module.exports = (io, socket, games_list) => {
     socket.on("request_to_join_game", function(room_id, callback){
         console.log("Request from socket:",socket.id," to join room:", room_id);
 
+        /* Before joining room - check that the request is valid */
+        /* Check if valid game_id */
+        console.log(">> Game/Room ID found in gameslist{}?", !!games_list[room_id]);
+        if ( !!games_list[room_id] ){
+            /* Check if game entry has expired */
+            console.log(">> Game entry in gameslist{} not yet expired?", Date.now() > !!games_list[room_id].expires_at);
+            /* Check if other player(s) are still connected */
+            /* Check if game has already started */
+            console.log(">> Game has already started?", !!games_list[room_id].started_at, games_list[room_id].started_at );
+            /* Check if we have exceeded maxplayers */
+            console.log(">> Players already joined game:", games_list[room_id].server_names.count, games_list[room_id].server_names  );
+
+                
+            socket.join(room_id);
+            socket.leave("games-lobby");
+            console.log("Joined room!",socket.data, "-->", room_id);
+            console.log("~~~~~~~~~~~~~~~~~~~~~~~~~");
+            console.log(games_list);
+            if (games_list[room_id] && games_list[room_id].server_names.indexOf(socket.data.thisPlayerName) == -1 ){
+                games_list[room_id].server_names.push(socket.data.thisPlayerName);
+            }
+            if (games_list[room_id] && games_list[room_id].server_sockets.indexOf(socket.id) == -1 ){
+                games_list[room_id].server_sockets.push(socket.id);
+            }
+            console.log("~~~~~~~~~~~~~~~~~~~~~~~~~");
+            // const room_users_1 = io.of("/games_io").in(room_id).adapter.sids || new Map();
+            // const count_array = Array.from( users_map );
+            // const lobby_count = count_array.length;
+            // const room_users_1_count = Array.from( room_users_1 ).length;
+            const room_users_2 = io.of("/games_io").adapter.rooms.get(room_id) || new Map();
+            const room_users_2_count = Array.from( room_users_2 ).length;
+
+            const return_object = { 
+                "status":"joined",
+                "room_id": room_id,
+                "room_users_2": room_users_2,
+                "room_users_2_count": room_users_2_count,
+                // "room_users_1": room_users_1,
+                // "room_users_1_count": room_users_1_count,
+            };
+
+            console.log("return_object:\n",return_object);
+
+            if (room_users_2_count == 2){
+                console.log("We have required # of players for this game of '"+socket.data.app+"' (2) - starting now!");
+                serverStartGame(room_id, socket.data.app);
+            } else {
+                console.log("Waiting as we only have "+room_users_2_count+" player(s) for this game of '"+socket.data.app+"'. We need 2.");
+            } 
+
+            return callback(return_object);
         
-
-
-
-        socket.join(room_id);
-        socket.leave("games-lobby");
-        console.log("Joined room!",socket.data, "-->", room_id);
-        console.log("~~~~~~~~~~~~~~~~~~~~~~~~~");
-        console.log(games_list);
-        if (games_list[room_id] && games_list[room_id].server_names.indexOf(socket.data.thisPlayerName) == -1 ){
-            games_list[room_id].server_names.push(socket.data.thisPlayerName);
-        }
-        if (games_list[room_id] && games_list[room_id].server_sockets.indexOf(socket.id) == -1 ){
-            games_list[room_id].server_sockets.push(socket.id);
-        }
-        console.log("~~~~~~~~~~~~~~~~~~~~~~~~~");
-        // const room_users_1 = io.of("/games_io").in(room_id).adapter.sids || new Map();
-        // const count_array = Array.from( users_map );
-        // const lobby_count = count_array.length;
-        // const room_users_1_count = Array.from( room_users_1 ).length;
-        const room_users_2 = io.of("/games_io").adapter.rooms.get(room_id) || new Map();
-        const room_users_2_count = Array.from( room_users_2 ).length;
-
-        const return_object = { 
-            "status":"joined",
-            "room_id": room_id,
-            "room_users_2": room_users_2,
-            "room_users_2_count": room_users_2_count,
-            // "room_users_1": room_users_1,
-            // "room_users_1_count": room_users_1_count,
-        };
-
-        console.log("return_object:\n",return_object);
-
-        if (room_users_2_count == 2){
-            console.log("We have required # of players for this game of '"+socket.data.app+"' (2) - starting now!");
-            serverStartGame(room_id, socket.data.app);
         } else {
-            console.log("Waiting as we only have "+room_users_2_count+" player(s) for this game of '"+socket.data.app+"'. We need 2.");
-        } 
 
-        return callback(return_object);
+            const return_object = { 
+                "status":"rejected",
+                "reason":"invalid_game_id",
+                "message":"Your Game ID was not found. Please request or generate a new link.",
+                "room_id": room_id
+            };
+            console.log("return_object:\n",return_object);
+            return callback(return_object);
+
+        }
+         
+
     });
 
     socket.on("player_click", function(click_obj){

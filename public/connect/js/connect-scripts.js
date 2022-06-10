@@ -14,13 +14,13 @@
 [X] Make sound on incoming click
 [X] Glow momentarily on incoming cell
 [X] Remove settings (or remove rename)
-[ ] Check "Start game" when starting remotely
+[X] Check "Start game" when starting remotely
 [ ] Copy to clipboard?!
 [ ] Disable the active cursor when it's not your turn...
 [ ] Timer for each turn?
 
 [ ] Remove players from Lobby when they start a game
-[ ] Block game when ID not found or game has started --> Redirect
+[X] Block game when ID not found or game has started --> Redirect
 [ ] Block game when exceeding max players
 [ ] Handle invite when invited from lobby
 [ ] Rematch after win/lose/draw 
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     /* Initialize new game */
     // pageLoad("onready");
-    updateFromLocalStorage(connect);
+    // updateFromLocalStorage(connect);
     setUsername();
     updateStats();
     
@@ -301,7 +301,13 @@ function pageLoad(pageLoadTrigger) {
                 $('#joinModalInfo > .initial').fadeOut(4000);
                 // $('#joinModalInfo').hide().html("Successfully joined game. Waiting for your opponent...").fadeIn('slow');
                 $('#joinModalInfo').append("<div class='update'>Successfully joined the game. Waiting for your opponent...</div>").fadeIn('slow');
+                return;
             }
+            if (response.status=="rejected"){
+                alert(response.message);
+                document.location.href = document.location.origin + document.location.pathname;
+            }
+
             // functionCallback(response);
             // return response;
         });
@@ -341,7 +347,7 @@ function setUsername(setThisUsername) {
 
 function server_start_game(connectObj){
     console.log("STARTING! server_start_game()");
-    // console.log("STARTING! server_start_game()", JSON.stringify(connect), JSON.stringify(connectObj));
+    console.log("STARTING! server_start_game()", JSON.stringify(connect), JSON.stringify(connectObj));
     connect = Object.assign(connect, connectObj);
     /* Update the local connect.names object because we server it from the server as an array */
     for (let i = 0; i < connect.server_names.length; i++) {
@@ -369,6 +375,8 @@ function server_start_game(connectObj){
 function start_game(trigger) {
     //TODO: Detect who clicked to start a new game
     //TODO: Confirm with BOTH players if playing separately
+
+    console.log("connect.has_started",connect.has_started, connect);
 
     if ( connect.has_started == true ) {
         if ( confirm("Are you sure you want to start a new game") ){
