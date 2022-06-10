@@ -16,8 +16,8 @@
 
 // Scripts for connect
 
-const connect = {
-    thisPlayerName: null,
+let connect = {
+    thisPlayerName: localStorage.getItem("thisPlayerName"),
     gameOver: null,
     currentPlayer: 1,
     maxPlayers: 2,
@@ -48,6 +48,15 @@ function establishSocket(queryParamsToSend = {}) {
 
 /* Websockets Handlers */
 function declareSocketHanders(socket) {
+
+    socket.on("lobby_update", (payload) => {
+        updateLobbyStats(payload);
+    });
+
+    socket.on("server_start_game", (payload) => {
+        server_start_game(payload);
+    });
+
     socket.onAny((event, ...args) => {
         console.log(`[EVENT] got event: ${event}`, args);
     });
@@ -63,16 +72,19 @@ function generateGameId(functionCallback) {
 
     };
     socket.emit("generate_game_url", request_obj, (response) => {
-        console.log("generateGameId() - response:",response);
+        // console.log("generateGameId() - response:",response);
         functionCallback(response);
         return response;
-        // if (err){
-        //     $("#share_url").val("Something went v'err'y wrong!");
-        //     console.log(err);
-        // } else {
-            // $("#share_url").val("Response:" + response);
-            // console.log("Response:",response);
-        // }
+    });
+}
+
+function updateLobbyStatsFromServer(functionCallback) {
+    // TODO: Get rid of the callback and just use the emit to all users event
+    // console.log("updateLobbyStatsFromServer() - Sending request event...");
+    socket.emit("request_lobby_update", null, (response) => {
+        console.log("updateLobbyStatsFromServer() - response:",response);
+        functionCallback(response);
+        return response;
     });
 }
 
@@ -86,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     
     /* Handlers for buttons */
     document.getElementById("new_game_button").addEventListener("click", function handleClick(event){
-        start_game();
+        start_game('button_click');
     });
     
     document.getElementById("name_players_button").addEventListener("click", function handleClick(event){
@@ -185,14 +197,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     });
 
-
+    console.log("USERNAME: ",connect.thisPlayerName);
     /* Once everything is ready client-side, let's get connected! */
     socket = establishSocket({
         "thisPlayerName":connect.thisPlayerName
     });
         
     declareSocketHanders(socket);
-
 
     pageLoad("onready");
 
@@ -211,28 +222,51 @@ document.addEventListener("DOMContentLoaded", function (event) {
     // });    
 });
 
+function getUrlParam(param){
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    return urlParams.get(param);
+}
+
 function pageLoad(pageLoadTrigger) {
-    console.log("TODO: Check if URL has game_id param");
+    // http://localhost:4000/connect/?app=connect&game_id=7da23f63-65cd-4fa0-8f73-98a72e55e510&expiry=1654715622885
+    console.log("Check if URL has game_id param");
+    if ( getUrlParam("game_id") ){
+        const game_id = getUrlParam("game_id");
+        const expires_at = parseInt(getUrlParam("expiry"));
+        console.log("> Game ID found:", game_id);
+        console.log("> Expires:", expires_at, new Date(expires_at) );
+        console.log("> TimeNow:", Date.now(), new Date(Date.now()) );
+        /* Ignoring expiry for now - will be valid if another user is still in the new room */
+        console.log("> Game Expired: ",  Date.now() > expires_at );
+        
+        
+        console.log("TODO: Check if we have an active game at the moment (reload!)");
 
-    console.log("TODO: game_id param found in URL!");
+        setUsername();
+        connect.names[1] = localStorage.getItem("thisPlayerName");
 
-    console.log("TODO: Check if we have an active game at the moment (reload!)");
+        console.log("Requesting to join game room:",game_id);
+        $("#joinModalInfo").html("<div class='initial'>Requesting to join game room: <code>"+game_id+"</code></div>");
+        $("#gameConnectionModal").modal({backdrop: 'static', keyboard: false});
 
+        socket.emit("request_to_join_game", game_id, (response) => {
+            console.log("request_to_join_game() - response:",response);
+            if (response.status=="joined"){
+                // $('#joinModalInfo').hide().html("Successfully joined game. Waiting for your opponent...").fadeIn('slow');
+                $('#joinModalInfo > .initial').fadeOut(4000);
+                // $('#joinModalInfo').hide().html("Successfully joined game. Waiting for your opponent...").fadeIn('slow');
+                $('#joinModalInfo').append("<div class='update'>Successfully joined the game. Waiting for your opponent...</div>").fadeIn('slow');
+            }
+            // functionCallback(response);
+            // return response;
+        });
 
-
-    console.log("DONE: Check for playername in localStorage");
-    setUsername();
-
-    console.log("DONE: Setting player 1");
-    connect.names[1] = localStorage.getItem("thisPlayerName");
-
-
-    // localStorage.setItem(key,value); 
-    // localStorage.getItem(key);
-    
-    
-    console.log("TODO: No game_id param found in URL");
-    openGamePlayModal();
+    } else {
+        console.log("TODO: No game_id param found in URL");
+        openGamePlayModal();
+    }
 }
 
 function setUsername(setThisUsername) {
@@ -258,20 +292,47 @@ function setUsername(setThisUsername) {
         return localStorage.getItem("thisPlayerName");
     }
 
-    console.error("Should never get here!");
+    // console.error("Should never get here!");
     return localStorage.getItem("thisPlayerName");
 }
 
-function start_game() {
+function server_start_game(connectObj){
+    console.log("STARTING! server_start_game()", JSON.stringify(connect), JSON.stringify(connectObj));
+    connect = Object.assign(connect, connectObj);
+    /* Update the local connect.names object because we server it from the server as an array */
+    for (let i = 0; i < connect.server_names.length; i++) {
+        console.log(i+1, connect.server_names[i]);
+        connect.names[i+1] = connect.server_names[i];
+    }
+
+    /* In case the user is still on the URL generation page */
+    if (!getUrlParam("game_id")){
+        document.location.href = connect.game_url;
+    }
+
+    /* Hide any left over modals */
+    $(".modal").modal('hide');
+    start_game();
+
+}
+
+function start_game(trigger) {
     //TODO: Detect who clicked to start a new game
     //TODO: Confirm with BOTH players if playing separately
 
-    if ( confirm("Are you sure you want to start a new game") ){
-        console.log("starting new game");
-    } else {
-        console.log("cancelled");
-        return false;
+    if ( connect.has_started == true ) {
+        if ( confirm("Are you sure you want to start a new game") ){
+            console.log("starting new game");
+        } else {
+            console.log("cancelled");
+            return false;
+        }
     }
+
+    if (trigger == 'button_click'){
+        document.location.href = document.location.origin + document.location.pathname;
+    }
+
     // else {
     //     console.log("No winner object so this is the first game");
     // }
@@ -313,6 +374,7 @@ function cellClick(cell_id_or_element) {
     const cellElem = document.getElementById(cellElemId);
     
     if ( isClickValid(cellElem.id, connect.currentPlayer) ){
+        connect.has_started = true;
         // Confirmed this was a valid click!
         // console.log("Valid Click Detected by currentPlayer:", connect.currentPlayer, " on cell:", cellElem.id);
         // Update the UI (only)
@@ -486,7 +548,8 @@ function nextPlayer(){
 
 function updateCurrentPlayerStat(){
     // Update currentplayer stat
-    document.getElementById("currentPlayer").innerHTML = "<span class='thisCurrentPlayer player"+connect.currentPlayer+"'>"+connect.names[connect.currentPlayer]+"</span>";
+    const currentPlayerLabel = (connect.names[connect.currentPlayer] == connect.thisPlayerName ) ? "YOUR TURN" : connect.names[connect.currentPlayer];
+    document.getElementById("currentPlayer").innerHTML = "<span class='thisCurrentPlayer player"+connect.currentPlayer+"'>"+currentPlayerLabel+"</span>";
 }
 
 function updateStats(){
@@ -618,6 +681,9 @@ function openGamePlayModal(requestingUser){
 
     $("#share_url").val("Generating game ID...");
 
+    /* Load lobby details if not already local TODO: Make local! */
+    updateLobbyStatsFromServer(updateLobbyStats);
+
     /* generateGameId + callback function */
     generateGameId(updateShareUrl);
 
@@ -634,13 +700,37 @@ function openGamePlayModal(requestingUser){
 }
 
 function updateShareUrl(params) {
-    console.log("updateShareUrl",params);
-    const shareUrl = document.location.href + "?" + params;
+    // console.log("updateShareUrl()",params);
+    // dl = document.location;
+    // dl.origin + dl.pathname
+    const shareUrl = document.location.origin + document.location.pathname + "?" + params;
+    console.log(shareUrl);
+
+    /* Add to input field */
     $("#share_url").val(shareUrl);
 
+    /* Add to link in text label */
     const linkText = "this link"
-    const shareUrl_html = "<a href='shareUrl' target='_self' class='share-url-link'>" + linkText + "</a>";
+    const shareUrl_html = "<a href='" + shareUrl + "' target='_self' class='share-url-link'>" + linkText + "</a>";
     $("#share_url_href").html(shareUrl_html);
+    
+    /* Add it to connect as we might need it if we need to refresh the page to start the game */
+    connect.game_url = shareUrl;
+}
+
+function updateLobbyStats(lobbyStatsObj){
+    // console.log("updateLobbyStats()",lobbyStatsObj);
+    // window.lobbyStatsObj = lobbyStatsObj;
+
+    /* Remove yourself from the lobby count as an available opponent */
+    $("#lobby-count").html(lobbyStatsObj.lobby_count - 1);
+
+    /* Remove yourself from list of available opponents */
+    var index_myself = lobbyStatsObj.lobby_usernames.indexOf(localStorage.getItem("thisPlayerName"));
+    if (index_myself !== -1) {
+        lobbyStatsObj.lobby_usernames.splice(index_myself, 1);
+    }
+    $("#lobby-list").html(lobbyStatsObj.lobby_usernames.join(", "));
 }
 
 function saveSettings() {
@@ -658,18 +748,23 @@ function saveSettings() {
 
 function updateFromLocalStorage(obj) {
     
-    if ( !localStorage.getItem("connect") ) {
-        console.log("No 'connect' object found in localStorage!");
-        return false;
-    } 
-    
-    const localObj = JSON.parse( localStorage.getItem("connect") );
+    // console.log("connect{}",connect);
 
-    if ( !!localObj.names ) {
-        connect.names = localObj.names;
-        // Update UI in case name has changed
-        updateStats();
+    if ( !localStorage.getItem("connect") ) {
+        // console.log("No 'connect' object found in localStorage!");
+    } else {
+        // console.log("Updating 'connect' object from localStorage");
+        connect = JSON.parse( localStorage.getItem("connect") );
     }
+    
+    // const localObj = JSON.parse( localStorage.getItem("connect") );
+
+    // if ( !!localObj.names ) {
+    //     connect.names = localObj.names;
+    //     // Update UI in case name has changed
+    //     updateStats();
+    // }
+
 }
 
 function focusNextOnEnter(e, selector) {
@@ -683,4 +778,31 @@ function focusNextOnEnter(e, selector) {
         $(longSelector)[$(longSelector).index($(selector)) + 1].focus();
         return true;
     }
+}
+
+
+function copyClipboard(copy_field_id, button_field_id) {
+    console.log("copyClipboard()",copy_field_id);
+    /* Get the text field */
+    var copyText = document.getElementById(copy_field_id);
+    /* Select the text field */
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    /* Copy the text inside the text field */
+    navigator.clipboard.writeText(copyText.value);
+    /* Alert the copied text */
+    console.log("Copied the text: " + copyText.value);
+    // console.log(this);
+    
+    /* Update button */
+    document.getElementById(button_field_id).classList.add("btn-success");
+    document.getElementById(button_field_id).innerText = "✅ Copied!";
+    /* Then revert it... */
+    const button_timer = setInterval(function(){ 
+        document.getElementById(button_field_id).classList.remove("btn-success");
+        document.getElementById(button_field_id).innerText = document.getElementById(button_field_id).title;
+        clearInterval(button_timer);
+    }, 2000);
+
+
 }

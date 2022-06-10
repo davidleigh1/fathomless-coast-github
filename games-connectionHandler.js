@@ -1,25 +1,125 @@
-module.exports = (io, socket, socketChatObj) => {
+const socketHelperFunctions = require("./socketHelperFunctions.js");
+
+module.exports = (io, socket, games_list) => {
 
     console.log("LOAD FILE: games-connectionHandler.js");
-
     require("./socketHelperFunctions.js");
 
-    console.log("\n\nNEW *GAMES* CONNECTION DETECTED!!!!\nAPP:  ", socket.handshake.query.app ,"   \n\n\n");
-    
-    /* Standardize for all apps */
-    socket.data = Object.assign(socket.data, socket.handshake.query);
-    console.log(">> User connection detected for app:", socket.data.app);
+    /* Define classes & prototypes */
+    // const allplayers = {};
+    // socket.on('login',(userID)=>{
+    //     allSockets[userID] = socket; 
+    // })
 
-    if ( socket.data.app == "connect" ){
-        console.log("[Connect] user detected:", socket.data);
-        console.log("[Connect] Adding user '" + socket.data.thisPlayerName + "' on socket '" + socket.id + "' to room 'games-lobby'");
-        socket.join("games-lobby");
-        io.to(socket.id).emit("joined_games_lobby");
-        // io.to(socket.id).emit("update_games_lobby",lobby_user_count());
-        // logGamesStatus("/games_io");
+    // io.of("/games_io").adapter.on("create-room", (room) => {
+    //     console.log(`[SOCKET EVENT] room ${room} was created`);
+    //   });
+      
+    //   io.of("/games_io").adapter.on("join-room", (room, id) => {
+    //     console.log(`[SOCKET EVENT] socket ${id} has joined room ${room}`);
+    //   });
+
+    const minsUntilExpiry = 10;
+
+    class Game {
+
+        id;
+        room_id;
+        app;
+        // names = ['Player 1','Player 2'];
+        server_names = [];
+        server_sockets = [];
+        // created_at = Date.now();
+        // expires_at = Date.now() + (minsUntilExpiry * 60000);
+
+        constructor(app, submitted_names = [], submitted_sockets = []) {
+            // this.id = Math.floor(Math.random() * (99999 - 17353 + 1) + 17353);
+            this.id = generateUUID();
+
+            var default_names_array = this.server_names;
+            var submitted_names_array = (typeof submitted_names == "string") ? submitted_names.split(',') : submitted_names; 
+            for(var i = 0; i < submitted_names_array.length; i++) {
+               default_names_array[i] = submitted_names_array[i];
+            }
+            this.server_names = default_names_array;
+
+            var submitted_sockets_array = (typeof submitted_sockets == "string") ? submitted_sockets.split(',') : submitted_sockets;
+            this.server_sockets = submitted_sockets_array || this.server_sockets;
+
+            this.room_id = this.id;
+            this.app = app || "Unknown";
+            this.created_at = Date.now();
+            this.expires_at = Date.now() + (minsUntilExpiry * 60000);
+            games_list[this.id] = this;
+            console.log("--------------------------");
+            console.log("Created new game! ID:", this.id);
+            console.log(games_list[this.id]);
+            console.log(games_list);
+            console.log("Current waiting games:",Object.keys(games_list).length)
+            console.log("--------------------------");
+            // console.log(io.of("/games").adapter.rooms);
+            // console.log(io.in("games-lobby").allSockets());
+            console.log(io.of("/games_io").in("games-lobby").adapter.sids);
+            console.log("--------------------------");
+            // logGamesStatus("/games_io");
+        }
+
+        introduceSelf() {
+            console.log(`Hi! This games's ID is: ${this.id}`);
+        }
+
     }
 
+    /* Only admit players with usernames */
+    if ( socket.data.thisPlayerName || 
+        socket.handshake.query.thisPlayerName && 
+        socket.data.thisPlayerName != 'null' &&
+        socket.handshake.query.thisPlayerName != 'null'
+    ) {
 
+        console.log("\n\nNEW *GAMES* CONNECTION DETECTED!!!!\nAPP:  ", socket.handshake.query.app ,"   \n\n\n");
+        
+        /* Standardize for all apps */
+        socket.data = Object.assign(socket.data, socket.handshake.query);
+        console.log(">> User connection detected for app:", socket.data.app);
+
+        // if ( socket.data.app == "connect" ){
+            console.log("[Connect] user detected:", socket.data);
+            console.log("[Connect] Adding user '" + socket.data.thisPlayerName + "' on socket '" + socket.id + "' to room 'games-lobby'");
+            // socket.set('nickname', "Earl");
+            socket.join("games-lobby");
+            // allplayers[socket.id] = socket.data;
+            io.to(socket.id).emit("joined_games_lobby");
+            // io.to(socket.id).emit("update_games_lobby",lobby_user_count());
+
+            console.log("***********");
+            console.log("GAME LOBBY USERS:", io.of("/games_io").in("games-lobby").adapter.sids);
+                io.of("/games_io").in("games-lobby").adapter.sids.forEach(function(value, key) {
+                    console.log(key, ">", io.of("/games_io").sockets.get(key).handshake.query.thisPlayerName );
+                });
+            console.log("***********");
+            console.log("ALL GAME USERS:", io.of("/games_io").adapter.sids);
+                io.of("/games_io").adapter.sids.forEach(function(value, key) {
+                    console.log(key, ">", io.of("/games_io").sockets.get(key).handshake.query.thisPlayerName );
+                });
+            console.log("***********");
+            console.log("ALL ROOMS:", io.of("/games_io").adapter.rooms);
+                // io.of("/games_io").adapter.sids.forEach(function(value, key) {
+                //     console.log(key, ">", io.of("/games_io").sockets.get(key).handshake.query.thisPlayerName );
+                // });
+            console.log("***********");
+
+            // logGamesStatus("/games_io");
+        // }
+
+    } else {
+
+        console.log("\n\n\n~~~~~~~~~~~");
+        console.log("CONNECTION REJECTED - NO USERNAME FOUND!", socket.id);
+        console.log("socket.handshake.query:\n", socket.handshake.query);
+        console.log("~~~~~~~~~~~\n\n\n");
+
+    }
 
 
 
@@ -152,6 +252,10 @@ module.exports = (io, socket, socketChatObj) => {
         console.log("Disconnection detected\nSocket:",socket.id, "\nPayload:" ,payload, "\nsocket.data:" ,socket.data);
         console.log("-------------\n\n\n\n");
 
+        update_lobby_stats();
+
+        // delete allplayers[socket.id];
+
         // if (socket.data.app == "chat"){
         //     // TODO: What if returns 0 or >1 ?
         //     // const disconnectedUserObj = findUsers("socket_id", socket.id)[0] || {};
@@ -162,6 +266,45 @@ module.exports = (io, socket, socketChatObj) => {
         //     io.emit("user_disconnected", {'socket_id':socket.id, 'data': socket.data } );
         // }
     };
+
+    const update_lobby_stats = (event_playload) => {
+
+        // console.log(">>>>>> update_lobby_stats()");
+        // console.log(io.of("/games_io").adapter.rooms.get("games-lobby"));
+
+        /* Need to declare this in two steps - to provide an empty array - in case the map() is empty */
+        const users_map = io.of("/games_io").adapter.rooms.get("games-lobby") || new Map();
+        // const count_array = Array.from( users_map );
+        // const lobby_count = count_array.length;
+        const lobby_count = Array.from( users_map ).length;
+
+        const sids_obj = io.of("/games_io").in("games-lobby").adapter.sids;
+        // const sids_obj = io.in("games-lobby").adapter.sids;
+        console.log("sids_obj",sids_obj);
+        const lobby_usernames = [];
+        const lobby_users = {};
+        sids_obj.forEach(function(value, key) {
+            let thisSocket = io.of("/games_io").sockets.get(key);
+            // console.log(key);
+            // console.log( io.of("/games_io").sockets.get(key).handshake.query.thisPlayerName );
+            lobby_usernames.push(thisSocket.handshake.query.thisPlayerName);
+            lobby_users[key] = thisSocket.handshake.query;
+        });
+
+        const return_object = {
+            "lobby_count": lobby_count,
+            "lobby_usernames": lobby_usernames,
+            "lobby_users": lobby_users
+        };
+
+        console.log("lobby_users - no nulls!\n",lobby_usernames,"\n",lobby_users);
+
+        io.of("/games_io").to("games-lobby").emit("lobby_update",return_object);
+        // console.log(return_object);
+        // return callback(return_object);
+        return return_object;
+    };
+
 
     // const chat_requestUserListEvent = (payload, callback) => {
     //     console.log("userlist request by...", payload);
@@ -175,26 +318,106 @@ module.exports = (io, socket, socketChatObj) => {
     socket.on("disconnect", disconnectEvent);
 
     socket.on("generate_game_url", function(msg_obj,callback){
-        console.log(msg_obj, callback);
+        console.log("[INCOMING EVENT] generate_game_url", msg_obj, callback);
 
-        /* For expiry timestamp */
-        const minutesToAdd = 10;
-        const currentDateTime = Date.now();
-        const futureDateTime = Date.now() + (minutesToAdd * 60000);
+        /* Log this Game ID as we'll check for it later when users load it in the page URL */
+        const new_game_obj = new Game("connect", msg_obj.thisPlayerName, socket.id);
+        console.log("---->> Socket:",socket.id," to join room:", new_game_obj.room_id);
+        console.log("---->>", games_list);
+        socket.join(new_game_obj.room_id);
 
-        /* Random Game ID */
-        const share_id = generateUUID();
-        
-        const response_text = "app="+msg_obj.app+"&game_id="+share_id+"&expiry="+futureDateTime;
-        return callback(response_text);
+        let response_url = "";
+        response_url += "app="+new_game_obj.app;
+        response_url += "&game_id="+new_game_obj.id;
+        response_url += "&expiry="+new_game_obj.expires_at;
+
+        return callback(response_url);
     });
 
+    socket.on("request_lobby_update", function(event_playload, callback){
+        console.log("[INCOMING EVENT] lobby_update", event_playload);
 
+        // const lobby_count = Array.from( io.of("/games_io").adapter.rooms.get("games-lobby") ).length;
+
+        // const sids_obj = io.of("/games_io").in("games-lobby").adapter.sids;
+        // const lobby_usernames = [];
+        // const lobby_users = {};
+        // sids_obj.forEach(function(value, key) {
+        //     let thisSocket = io.of("/games_io").sockets.get(key);
+        //     // console.log(key);
+        //     // console.log( io.of("/games_io").sockets.get(key).handshake.query.thisPlayerName );
+        //     lobby_usernames.push(thisSocket.handshake.query.thisPlayerName);
+        //     lobby_users[key] = thisSocket.handshake.query;
+        // });
+
+        // const return_object = {
+        //     "lobby_count": lobby_count,
+        //     "lobby_usernames": lobby_usernames,
+        //     "lobby_users": lobby_users
+        // };
+        // console.log(return_object);
+
+        const return_object = update_lobby_stats(event_playload);
+
+        io.of("/games_io").to("games-lobby").emit("lobby_update",return_object);
+        return callback(return_object);
+    });
+
+    socket.on("request_to_join_game", function(room_id, callback){
+        console.log("Request from socket:",socket.id," to join room:", room_id);
+        socket.join(room_id);
+        socket.leave("games-lobby");
+        console.log("Joined room!",socket.data, "-->", room_id);
+        console.log("~~~~~~~~~~~~~~~~~~~~~~~~~");
+        console.log(games_list);
+        if (games_list[room_id] && games_list[room_id].server_names.indexOf(socket.data.thisPlayerName) == -1 ){
+            games_list[room_id].server_names.push(socket.data.thisPlayerName);
+        }
+        if (games_list[room_id] && games_list[room_id].server_sockets.indexOf(socket.id) == -1 ){
+            games_list[room_id].server_sockets.push(socket.id);
+        }
+        console.log("~~~~~~~~~~~~~~~~~~~~~~~~~");
+        // const room_users_1 = io.of("/games_io").in(room_id).adapter.sids || new Map();
+        // const count_array = Array.from( users_map );
+        // const lobby_count = count_array.length;
+        // const room_users_1_count = Array.from( room_users_1 ).length;
+        const room_users_2 = io.of("/games_io").adapter.rooms.get(room_id) || new Map();
+        const room_users_2_count = Array.from( room_users_2 ).length;
+
+        const return_object = { 
+            "status":"joined",
+            "room_id": room_id,
+            "room_users_2": room_users_2,
+            "room_users_2_count": room_users_2_count,
+            // "room_users_1": room_users_1,
+            // "room_users_1_count": room_users_1_count,
+        };
+
+        console.log("return_object:\n",return_object);
+
+        if (room_users_2_count == 2){
+            console.log("We have required # of players for this game of '"+socket.data.app+"' (2) - starting now!");
+            serverStartGame(room_id, socket.data.app);
+        } else {
+            console.log("Waiting as we only have "+room_users_2_count+" player(s) for this game of '"+socket.data.app+"'. We need 2.");
+        } 
+
+        return callback(return_object);
+    });
 
     socket.onAny((event, ...args) => {
         console.log(`[GAME EVENT] got event: ${event}`, args);
     });
 
+
+    function serverStartGame(room_id, appType) {
+        console.log("serverStartGame()",room_id, appType);
+        games_list[room_id].started_at = Date.now();
+        const return_object = games_list[room_id];
+        console.log("Sending this game entry",games_list[room_id]);
+        io.of("/games_io").to(room_id).emit("server_start_game",return_object);
+        // socket.data = Object.assign(socket.data, socket.handshake.query);
+    }
 
     // socket.on("client_registration", chat_clientRegistrationEvent);
     // socket.on("client_registration_request", chat_clientRegistrationRequestEvent);

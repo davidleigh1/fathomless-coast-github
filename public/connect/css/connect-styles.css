@@ -217,10 +217,19 @@ input#share_url {
   opacity: 1;
 }
 
-button#copy_url {
+button#copy_url_button {
   border: 1px solid lightgray;
   height: 2em;
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: copy;
+}
+
+
+#lobby-list {
+  font-family: monospace;
+  background-color: #d3d3d359;
+  border-radius: 5px;
+  margin: 0 1em;
+  line-height: 2em;
 }

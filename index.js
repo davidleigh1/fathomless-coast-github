@@ -52,11 +52,14 @@ io.on("connection", onConnection);
 
 
 /* Namespace handling for games! */
+const games_list = {
+    "1":{"hello":"world"}
+};
 const games_io = io.of("/games_io");
 games_io.on("connection", socket => {
   console.log("someone connected to games_io:\n", socket.handshake.query);
   socketHelperFunctions(io, socket);
-  gamesConnectionHandlers(io, socket);
+  gamesConnectionHandlers(io, socket, games_list);
 });
 games_io.emit("hi", "everyone!");
 
