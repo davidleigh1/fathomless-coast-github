@@ -35,6 +35,8 @@ module.exports = (io, socket, games_list) => {
         constructor(app, submitted_names = [], submitted_sockets = []) {
             // this.id = Math.floor(Math.random() * (99999 - 17353 + 1) + 17353);
             this.id = generateUUID();
+            this.server_max_players = 2;
+            this.server_starting_player = randomInt(1,2);
 
             var default_names_array = this.server_names;
             var submitted_names_array = (typeof submitted_names == "string") ? submitted_names.split(',') : submitted_names; 
@@ -61,7 +63,9 @@ module.exports = (io, socket, games_list) => {
             // console.log(io.in("games-lobby").allSockets());
             console.log(io.of("/games_io").in("games-lobby").adapter.sids);
             console.log("--------------------------");
-            // logGamesStatus("/games_io");
+            console.log("\n\n\n\n");
+            console.log(">>> this.server_starting_player:", this.server_starting_player);
+            console.log("\n\n\n\n");
         }
 
         introduceSelf() {
@@ -452,6 +456,10 @@ module.exports = (io, socket, games_list) => {
         console.log("serverStartGame()",room_id, appType);
         games_list[room_id].started_at = Date.now();
         const return_object = games_list[room_id];
+
+        /* Since we might be restarting/replaying an existing game - we need to re-randomize the starting player  */
+        return_object.server_starting_player = randomInt(1,2);
+
         console.log("Sending this game entry",games_list[room_id]);
         io.of("/games_io").to(room_id).emit("server_start_game",return_object);
         // socket.data = Object.assign(socket.data, socket.handshake.query);

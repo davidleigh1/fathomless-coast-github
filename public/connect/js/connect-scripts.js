@@ -25,6 +25,16 @@
 [ ] Handle invite when invited from lobby
 [ ] Rematch after win/lose/draw 
 
+[X] Settings button on Lobby page
+[ ] Clearer Lobby modal
+[ ] Fix Emmr's null username
+[ ] Allow instant name changes
+[ ] Allow invites within games?
+[ ] Allow invite from lobby
+[X] Add volume controls
+[ ] Add Mobile Share button
+[ ] Make the first player random
+
 */
 
 
@@ -33,8 +43,10 @@
 
 // Scripts for connect
 
+const localStorageConnect = JSON.parse( localStorage.getItem("connect") ) || {};
+
 let connect = {
-    thisPlayerName: localStorage.getItem("thisPlayerName"),
+    thisPlayerName: localStorage.getItem("thisPlayerName") || localStorageConnect.thisPlayerName,
     gameOver: null,
     currentPlayer: 1,
     maxPlayers: 2,
@@ -42,7 +54,8 @@ let connect = {
     names: {
         1: "PLAYER 1",
         2: "PLAYER 2",
-    }
+    },
+    beepVolume: localStorageConnect.beepVolume || 100, /* Radio button values: 0, 10, 50, 100 */
 };
 
 /* Classes */
@@ -169,7 +182,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
         });
 
         // After declaring all the handlers - don't forget to actually show the modal! 
-        openSettings();
+        // openSettings();
+        openSettingsCombined();
     });
     
     document.getElementById("modal_settings_save").addEventListener("click", function handleClick(event){
@@ -260,8 +274,23 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     // $('#settingsModalForm').on('submit', function(e) {
     //     alert("Form submitted!");
-    // });    
+    // }); 
+
+    // console.log("TODO: REMOVE openSettingsCombined();");
+    // openSettingsCombined();
 });
+
+
+
+
+
+
+
+
+
+
+
+
 
 function getUrlParam(param){
 
@@ -349,6 +378,12 @@ function server_start_game(connectObj){
     console.log("STARTING! server_start_game()");
     console.log("STARTING! server_start_game()", JSON.stringify(connect), JSON.stringify(connectObj));
     connect = Object.assign(connect, connectObj);
+
+    /* Randomize the starting player */
+    // console.log("Starting player:",connect.currentPlayer, " / server says:",connectObj.server_starting_player);
+    // connect.currentPlayer = connect.server_starting_player;
+    // console.log("Starting player:",connect.currentPlayer, " / server says:",connectObj.server_starting_player);
+
     /* Update the local connect.names object because we server it from the server as an array */
     for (let i = 0; i < connect.server_names.length; i++) {
         // console.log(i+1, connect.server_names[i]);
@@ -405,7 +440,17 @@ function start_game(trigger) {
     });
 
     // Reset current player
-    connect.currentPlayer = 1;
+    /* Randomize the starting player */
+    connect.currentPlayer = connect.server_starting_player;
+
+    /* Set Opponent's name */
+
+
+    if (connect.currentPlayer == connect.thisPlayerNumber){
+        stopWaiting();
+    } else {
+        startWaiting();
+    }
 
     // Clear click counter
     connect.clicksAfterGameOver = 0;
@@ -462,6 +507,7 @@ function cellClick(cell_id_or_element) {
             // functionCallback(response);
             // return response;
         });
+        startWaiting();
 
 
         /* If the server acknowledges - then we process the UI update */
@@ -490,6 +536,9 @@ function server_incoming_click(opponent_click_obj) {
     
     if ( isClickValid(cellElem.id) ){
         connect.has_started = true;
+
+        stopWaiting();
+
         // Update the UI (only)
         updateCellOnValidClick(cellElem.id, connect.currentPlayer, true, true);   
         // TODO: updateCellOnValidClick(cellElemId, connect.currentPlayer);   
@@ -600,7 +649,7 @@ function updateCellOnValidClick(cellId, currentPlayerId, should_animate, should_
             // Set the frequency of the note to A4 (440 Hz)
             900,
             // Set the volume of the beep to 100%
-            20
+            parseInt(connect.beepVolume)
         );
     }
 
@@ -694,6 +743,10 @@ function updateCurrentPlayerStat(){
     // Update currentplayer stat
     const currentPlayerLabel = (connect.names[connect.currentPlayer] == connect.thisPlayerName ) ? "YOUR TURN" : connect.names[connect.currentPlayer];
     document.getElementById("currentPlayer").innerHTML = "<span class='thisCurrentPlayer player"+connect.currentPlayer+"'>"+currentPlayerLabel+"</span>";
+    // Update waiting indicator
+    document.getElementById("waitingIndicator").classList.remove("player1", "player2");
+    document.getElementById("waitingIndicator").classList.add("player"+connect.currentPlayer);
+    document.getElementById("opponentName").innerHTML = connect.names[connect.currentPlayer];
 }
 
 function updateStats(){
@@ -803,6 +856,46 @@ function getPlayername(id) {
     
 }
 
+function openSettingsCombined(requestingUser){
+
+    // Handle key presses - specifically return to save!
+    // $('#playerSettingsModal').on("keypress", function (e) {
+    //     if (e.which == 13) {
+    //         console.log("Keypress",e.which);
+    //         saveSettings();
+    //         // $(this).submit();
+    //         // $("#playerSettingsModal").modal('hide');
+    //     }
+    // });
+
+    $('#playerSettingsModal').on('keypress', 'input, select, checkbox, radio, button', function (e) {
+        return focusNextOnEnter(e, this);
+    });
+    
+    // Handle auto-focus on open
+    $('#playerSettingsModal').on('shown.bs.modal', function () {
+        // TODO: Make dynamic to select first input field
+        // $('#player1_name').focus();
+        const firstInput = document.getElementById('player1_name');
+        
+        firstInput.setSelectionRange(0, firstInput.value.length);
+        firstInput.focus();
+    });
+
+    // Prepare the modal
+    document.getElementById("player1_name").value = connect.thisPlayerName;
+
+    const beepVolume = connect.beepVolume;
+    $("label").find('input[name="beep-volume"][value="' + beepVolume + '"]').click();
+
+    // After declaring all the handlers - don't forget to actually show the modal! 
+    $("#playerSettingsModal").modal({backdrop: 'static', keyboard: false});
+
+    // Handle the input (validation etc)
+
+    // Update the vars to be used elsewhere
+}
+
 function openSettings(requestingUser){
     // TODO: Create a user-specific version of the modal etc for online-version
 
@@ -879,15 +972,30 @@ function updateLobbyStats(lobbyStatsObj){
 
 function saveSettings() {
     console.log("modal_settings_save clicked! Saving now!");
+
+    /* Update connect object */
     connect.thisPlayerName = document.getElementById("player1_name").value;
-    connect.names[connect.thisPlayerNumber] = document.getElementById("player1_name").value;
+    localStorage.setItem("thisPlayerName",connect.thisPlayerName);
+    connect.beepVolume = $('label.active input[name="beep-volume"]').val();
+    
+    if (!!connect.thisPlayerNumber){
+        /*  Required check otherwise we end up with connec.names.undefined = "username" as settings modal
+            is available for use before we get the thisPlayerNumber from the server */
+        connect.names[connect.thisPlayerNumber] = document.getElementById("player1_name").value;
+    }
+
     // connect.names[2] = document.getElementById("player2_name").value;
-    let connectObj = localStorage.getItem("connect") ? JSON.parse( localStorage.getItem("connect") ) : {};
-    connectObj.names = connect.names; 
+    // let connectObj = localStorage.getItem("connect") ? JSON.parse( localStorage.getItem("connect") ) : {};
+    // connectObj.names = connect.names; 
     localStorage.setItem("connect",JSON.stringify(connect));
     console.log("Updated localStorage > connect", JSON.parse(localStorage.getItem("connect")));
+
     // Update UI in case name has changed
     updateStats();
+
+    /* TODO: Remove this! This is a *horrible* hack!! */
+    $("#gamePlayModalTitle").html("Welcome <strong>"+connect.thisPlayerName+"</strong>! Let's play!");
+    
     $("#playerSettingsModal").modal('hide');
 }
 
@@ -957,7 +1065,7 @@ function playBeep(duration, frequency, volume){
         // Set default duration if not provided
         duration = duration || 200;
         frequency = frequency || 440;
-        volume = volume || 100;
+        volume = volume || connect.beepVolume || 100;
 
         try{
             let oscillatorNode = myAudioContext.createOscillator();
@@ -1007,10 +1115,29 @@ function playSound (event) {
             return false;
     }
     window.audio = new Audio(filename);
+    window.audio.volume = connect.beepVolume/10;
     window.audio.play();
 }
 
 function stopSound(){
     window.audio.pause();
     window.audio.currentTime = 0;
+}
+
+function testBeep(){
+    const selectedVolume = $('label.active input[name="beep-volume"]').val();
+    console.log("Testing sound volume based on selected (rather than saved!) volume setting...",selectedVolume);
+    playBeep(null,null,selectedVolume);
+}
+
+function startWaiting() {
+    console.log("Start Waiting");
+    $(".showWaiting").addClass("waiting");
+    $("#waitingIndicator").show();
+}
+
+function stopWaiting() {
+    console.log("Stop Waiting");
+    $(".showWaiting").removeClass("waiting");
+    $("#waitingIndicator").hide();
 }

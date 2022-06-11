@@ -64,6 +64,19 @@
     border: 3px groove yellow;
 }
 
+#waitingWrapper {
+  text-align: center;
+}
+#waitingIndicator {
+  display: inline-block;
+  font-size: x-large;
+}
+
+.waiting {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 .divTableCell {
     /* center the cell content */
     /* justify-content: center; */
@@ -179,6 +192,16 @@ span.cell_id {
 .btn-block {
   /* Required as default 100% is wider than space available */
   width: -webkit-fill-available !important;
+}
+
+.settings-radio {
+  border-color: buttonborder;
+}
+
+label.settings-radio.active {
+  color: #fff;
+  background-color: #545b62;
+  border-color: #4e555b;
 }
 
 

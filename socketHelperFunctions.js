@@ -210,4 +210,9 @@ module.exports = (io, socket, socketChatObj) => {
         return arrayToSort.sort((a,b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     }
 
+    randomInt = function (min,max) {
+        // randomInt(1,2);
+        return Math.floor(Math.random() * max) + min
+    }
+
 };

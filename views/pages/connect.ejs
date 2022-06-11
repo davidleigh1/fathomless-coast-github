@@ -23,11 +23,16 @@
             <div class="stats_container">
                 <div class="stat_line">Player's turn: <span id="currentPlayer">XXX</span></div>
                 <div class="stat_line">Free spaces: <span id="availableCells">XXX</span>/<span id="totalCells">XXX</span></div>
+                <!-- <div id="waitingIndicator" class="waitingIndicator">Waiting for <span id="opponentName" class="opponentName">opponent</span></div> -->
             </div>
             <!-- <p>current player: <span id="currentPlayer">XXX</span></p> -->
         </div>
-        <div class="body-wrapper">
 
+        <div id="waitingWrapper" class="waitingWrapper">
+            <div id="waitingIndicator" class="waitingIndicator thisCurrentPlayer">Waiting for <span id="opponentName" class="opponentName">opponent</span></div>
+        </div>
+
+        <div class="body-wrapper showWaiting">
             <div class="game-container">
                 <div class="flex-container">
                     <div id="1_6" class="flex-item divTableCell column_1 row_6 diagonal_3 emptyCell">
@@ -202,54 +207,12 @@
         <!-- /.modal -->
 
 
-        <!-- User Settings Modal -->
-        <div class="modal fade" id="playerSettingsModal" tabindex="-1" role="dialog" aria-labelledby="playerSettingsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                        <h4 class="modal-title center">Settings</h4>
-                    </div>
-                    <div class="modal-body">
-
-                        <div class="modal-body form-horizontal_X">
-                            <form id="settingsModalForm" class="form-horizontal" role="form">
-                                <div class="form-group">
-                                    <label for="player1" class="control-label_X col-xs-2">
-                                        Your name
-                                        <div class="label-comment">(Changes will only take effect in your next game)</div>
-                                    </label>
-                                    <div class="col-xs-8">
-                                    <input tabindex="1" type="text" class="form-control" id="player1_name" placeholder="Your screen name" required="required"  oninvalid="alert('Missing a valid name for Player #1');this.focus();" >
-                                    </div>
-                                </div>
-                                <!-- <div class="form-group">
-                                    <label for="player2" class="control-label_X col-xs-2">Player 2</label>
-                                    <div class="col-xs-8">
-                                    <input tabindex="2" type="text" class="form-control" id="player2_name" placeholder="Screen name for Player 2" required="required" oninvalid="alert('Missing a valid name for Player #2');this.focus();">
-                                    </div>
-                                </div> -->
-                            </form>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button tabindex="3" type="button" id="modal_close" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <button tabindex="4" type="button" id="modal_settings_save" form="settingsModalForm" onclick="/* document.getElementById('settingsModalForm').submit() */" class="btn btn-default btn-primary">Save</button>
-                    </div>
-                </div>
-                <!-- /.modal-content -->
-            </div>
-            <!-- /.modal-dialog -->
-        </div>
-        <!-- /.modal -->
-
-
-        <!-- Game Play Modal -->
+        <!-- Lobby Modal -->
         <div class="modal fade" id="gamePlayModal" tabindex="-1" role="dialog" aria-labelledby="gamePlayModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <!-- <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button> -->
+                        <button type="button" class="close" onclick="openSettingsCombined();" aria-hidden="true">⚙</button>
                         <h4 id="gamePlayModalTitle" class="modal-title center">Yalla! Let's Play!</h4>
                     </div>
                     <div class="modal-body">
@@ -335,7 +298,76 @@
         <!-- /.modal -->
 
 
+        <!-- User Settings Modal -->
+        <div class="modal fade" id="playerSettingsModal" tabindex="-1" role="dialog" aria-labelledby="playerSettingsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4 class="modal-title center">Settings</h4>
+                    </div>
+                    <div class="modal-body">
 
+                        <div class="modal-body form-horizontal_X">
+                            <form id="settingsModalForm" class="form-horizontal" role="form">
+                                <div class="form-group">
+                                    <label for="player1" class="control-label_X col-xs-2">
+                                        Your name
+                                        <div class="label-comment">May only update in your next game</div>
+                                    </label>
+                                    <div class="col-xs-7">
+                                    <input tabindex="1" type="text" class="form-control" id="player1_name" placeholder="Your screen name" required="required"  oninvalid="alert('Missing a valid name for Player #1');this.focus();" >
+                                    </div>
+                                </div>
+                                <!-- <div class="form-group">
+                                    <label for="player2" class="control-label_X col-xs-2">Beep Volume</label>
+                                    <div class="col-xs-8">
+                                        <div class="btn-group" role="group" aria-label="Basic example">
+                                            <button type="button" class="btn btn-outline-secondary">Off (0%)</button>
+                                            <button type="button" class="btn btn-outline-secondary" checked>Low (10%)</button>
+                                            <button type="button" class="btn btn-outline-secondary">Mid (50%)</button>
+                                            <button type="button" class="btn btn-outline-secondary">Full (100%)</button>
+                                        </div>
+                                        <input tabindex="2" type="text" class="form-control" id="player2_name" placeholder="Screen name for Player 2" required="required" oninvalid="alert('Missing a valid name for Player #2');this.focus();">
+                                    </div>
+                                </div> -->
+                                <div class="form-group">
+                                    <label for="player2" class="control-label_X col-xs-2" onclick="testBeep();">Beep Volume
+                                        <div class="label-comment">Click above to test</div>
+                                    </label>
+                                    <div class="col-xs-7 col-sm-8">
+                                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                            <!-- <label class="btn btn-secondary settings-radio active">
+                                              <input type="radio" name="options" id="option1" autocomplete="off" checked> Active
+                                            </label> -->
+                                            <label class="btn btn-secondary settings-radio">
+                                              <input type="radio" name="beep-volume" id="beep-volume-off" value="0" autocomplete="off"> Off (0%)
+                                            </label>
+                                            <label class="btn btn-secondary settings-radio ">
+                                              <input type="radio" name="beep-volume" id="beep-volume-low" value="10" autocomplete="off"> Low (10%)
+                                            </label>
+                                            <label class="btn btn-secondary settings-radio ">
+                                              <input type="radio" name="beep-volume" id="beep-volume-mid" value="50" autocomplete="off"> Mid (50%)
+                                            </label>
+                                            <label class="btn btn-secondary settings-radio ">
+                                              <input type="radio" name="beep-volume" id="beep-volume-full" value="100" autocomplete="off"> Full (100%)
+                                            </label>
+                                          </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button tabindex="3" type="button" id="modal_close" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button tabindex="4" type="button" id="modal_settings_save" form="settingsModalForm" onclick="/* document.getElementById('settingsModalForm').submit() */" class="btn btn-default btn-primary">Save</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
 
 
 
