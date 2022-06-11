@@ -15,7 +15,7 @@
 [X] Glow momentarily on incoming cell
 [X] Remove settings (or remove rename)
 [X] Check "Start game" when starting remotely
-[ ] Copy to clipboard?!
+[X] Copy to clipboard?!
 [ ] Disable the active cursor when it's not your turn...
 [ ] Timer for each turn?
 
@@ -27,13 +27,13 @@
 
 [X] Settings button on Lobby page
 [ ] Clearer Lobby modal
-[ ] Fix Emmr's null username
+[X] Fix Emmr's null username
 [ ] Allow instant name changes
 [ ] Allow invites within games?
 [ ] Allow invite from lobby
 [X] Add volume controls
 [ ] Add Mobile Share button
-[ ] Make the first player random
+[X] Make the first player random
 
 */
 
@@ -1041,11 +1041,18 @@ function copyClipboard(copy_field_id, button_field_id) {
     /* Select the text field */
     copyText.select();
     copyText.setSelectionRange(0, 99999); /* For mobile devices */
-    /* Copy the text inside the text field */
-    navigator.clipboard.writeText(copyText.value);
-    /* Alert the copied text */
-    console.log("Copied the text: " + copyText.value);
-    // console.log(this);
+
+    /* NOTE! navigator.clipboard.writeText() IS NOT SUPPORTED IN NON-SECURE ENVIRONMENTS */
+
+    try {
+        /* Copy the text inside the text field */
+        navigator.clipboard.writeText(copyText.value);
+        console.log("Copied text: " + copyText.value);
+
+    } catch (error) {
+        console.log("navigator.clipboard.writeText(copyText.value) failed.\nExpected to fail if window.isSecureContext == false.  window.isSecureContext = ",window.isSecureContext)
+        unsecuredCopyToClipboard(copyText.value);
+    }
     
     /* Update button */
     document.getElementById(button_field_id).classList.add("btn-success");
@@ -1056,8 +1063,21 @@ function copyClipboard(copy_field_id, button_field_id) {
         document.getElementById(button_field_id).innerText = document.getElementById(button_field_id).title;
         clearInterval(button_timer);
     }, 2000);
+}
 
-
+function unsecuredCopyToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+    } catch (err) {
+      console.error('Unable to copy to clipboard', err);
+    }
+    document.body.removeChild(textArea);
+    console.log("Copied via unsecuredCopyToClipboard()!");
 }
 
 function playBeep(duration, frequency, volume){
