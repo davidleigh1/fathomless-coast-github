@@ -55,7 +55,7 @@ let connect = {
         1: "PLAYER 1",
         2: "PLAYER 2",
     },
-    beepVolume: localStorageConnect.beepVolume || 100, /* Radio button values: 0, 10, 50, 100 */
+    beepVolume: localStorageConnect.beepVolume || 10, /* Radio button values: 0, 10, 50, 100 */
 };
 
 /* Classes */
@@ -892,12 +892,14 @@ function openSettingsCombined(requestingUser){
     $("#localstorage-thisPlayerName").html(lspn);
 
     const lsconnect = localStorage.getItem("connect") || "Not found";
-    $("#localstorage-connect").html(lsconnect);
+    $("#localstorage-connect").html( JSON.stringify(connect, Object.keys(connect).sort(), 2) );
+    // JSON.stringify(connect, Object.keys(connect).sort(), 2)
 
     const windowconnect = connect || "Not found";
-    $("#window-connect").html(JSON.stringify(windowconnect, null, 2));
+    $("#window-connect").html(JSON.stringify(windowconnect, Object.keys(windowconnect).sort(), 2));
     
-
+    /* Hide advanced debug section */
+    $("#debug-section").hide();
 
 
     // After declaring all the handlers - don't forget to actually show the modal! 
@@ -1181,4 +1183,28 @@ function stopWaiting() {
     console.log("Stop Waiting");
     $(".showWaiting").removeClass("waiting");
     $("#waitingIndicator").hide();
+}
+
+function storageClear(storageToClear) {
+    console.log("storageClear()",storageToClear);
+    switch (storageToClear) {
+        case 'connect':
+            console.log(connect);
+            connect = {};
+            console.log(connect);
+            break;
+        case 'localstorage.connect':
+            console.log(localStorage.getItem('connect'));
+            localStorage.clear('connect');
+            console.log(localStorage.getItem('connect'));
+            break;
+        case 'localstorage.thisPlayerName':
+            console.log(localStorage.getItem('thisPlayerName'));
+            localStorage.clear('thisPlayerName');
+            console.log(localStorage.getItem('thisPlayerName'));
+            break;
+        default:
+            console.log("'storageToClear' case not found",storageToClear);
+            break;
+    }
 }

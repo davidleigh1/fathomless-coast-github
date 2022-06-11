@@ -226,12 +226,12 @@
                                     </div>
                                 </div>
                                 <div id="gp-share-bottomline" class="form-group">
-                                    <div class="col-sm-6 col-xs-10">
-                                        <input tabindex="0" type="text" class="form-control" id="share_url" placeholder="Share URL..." readonly="readonly" value="">
+                                    <div class="col-sm-6_X col-xs-10_X">
+                                        <input tabindex="0" type="text" class="form-control_X col-sm-7 col-xs-11" id="share_url" placeholder="Share URL..." readonly="readonly" value="">
                                     </div>
-                                    <div class="col-sm-4 col-xs-11 center-text center">
-                                        <button type="button" class="btn col-sm-3 col-xs-4" id="copy_url_button" title="Copy" onclick="copyClipboard('share_url','copy_url_button');">Copy</button>
-                                        <button type="button" class="btn col-sm-5 col-xs-6" id="share_whatsapp" title="Share via WhatsApp" onclick="shareWhatsApp('share_url','share_whatsapp_button');"><%- include ("../partials/whatsapp-logo.ejs") %> WhatsApp</button>
+                                    <div class="col-sm-4_X col-xs-11_X center-text center">
+                                        <button type="button" class="btn col-sm-1 col-xs-4" id="copy_url_button" title="Copy" onclick="copyClipboard('share_url','copy_url_button');">Copy</button>
+                                        <button type="button" class="btn col-sm-2 col-xs-5" id="share_whatsapp" title="Share via WhatsApp" onclick="shareWhatsApp('share_url','share_whatsapp_button');"><%- include ("../partials/whatsapp-logo.ejs") %> WhatsApp</button>
                                     </div>
                                 </div>
 
@@ -346,31 +346,34 @@
                                           </div>
                                     </div>
                                 </div>
+                                <hr>
                                 <!-- Storage -->
                                 <div class="form-group">
-                                    <label class="">LocalStorage</label>
-                                    <div class="col-10">
-                                        <code>localStorage.getItem("thisPlayerName")</code>
-                                    </div>
-                                    <div class="col-10">
-                                        <div class="storage code code-style">
-                                            <pre><code><span id="localstorage-thisPlayerName">// localStorage > thisPlayerName</span></code></pre>
+                                    <label class="" onclick="$('#debug-section').toggle();" style="cursor:pointer;">LocalStorage / Debug</label>
+                                    <div id="debug-section">
+                                        <div class="col-10">
+                                            <code>localStorage.getItem("thisPlayerName")</code> <button type="button" id="clear-localstorage-thisPlayerName" onclick="storageClear('localstorage.thisPlayerName');" class="btn btn-default">🗑 <code>localstorage.thisPlayerName</code></button>
                                         </div>
-                                    </div>
-                                    <div class="col-10">
-                                        <code>localStorage.getItem("connect")</code>
-                                    </div>
-                                    <div class="col-10">
-                                        <div class="storage code code-style">
-                                            <pre><code><span id="localstorage-connect">// localStorage > connect</span></code></pre>
+                                        <div class="col-10">
+                                            <div class="storage code code-style">
+                                                <pre><code><span id="localstorage-thisPlayerName">// localStorage > thisPlayerName</span></code></pre>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-10">
-                                        <code>connect</code>
-                                    </div>
-                                    <div class="col-10">
-                                        <div class="storage code code-style">
-                                            <pre><code><span id="window-connect">// window > connect</span></code></pre>
+                                        <div class="col-10">
+                                            <code>localStorage.getItem("connect")</code> <button type="button" id="clear-localstorage-connect" onclick="storageClear('localstorage.connect');" class="btn btn-default">🗑 <code>localstorage.connect</code></button>
+                                        </div>
+                                        <div class="col-10">
+                                            <div class="storage code code-style">
+                                                <pre><code><span id="localstorage-connect">// localStorage > connect</span></code></pre>
+                                            </div>
+                                        </div>
+                                        <div class="col-10">
+                                            <code>connect</code> <button type="button" id="clear-connect" onclick="storageClear('connect');" class="btn btn-default">🗑 <code>connect</code></button>
+                                        </div>
+                                        <div class="col-10">
+                                            <div class="storage code code-style">
+                                                <pre><code><span id="window-connect">// window > connect</span></code></pre>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
