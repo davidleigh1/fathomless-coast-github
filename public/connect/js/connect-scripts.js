@@ -1080,6 +1080,15 @@ function unsecuredCopyToClipboard(text) {
     console.log("Copied via unsecuredCopyToClipboard()!");
 }
 
+function shareWhatsApp(copy_field_id, button_field_id) {
+    console.log("shareWhatsApp()",copy_field_id);
+    /* Get the text field */
+    const copyText = document.getElementById(copy_field_id).value;
+    const sharingText = "Come join me and play *Connect* at:%0a%0a" + encodeURIComponent(copyText);
+    const sharingLink = "whatsapp://send?text=" + sharingText;
+    window.open(sharingLink); 
+}
+
 function playBeep(duration, frequency, volume){
     return new Promise((resolve, reject) => {
         // Set default duration if not provided

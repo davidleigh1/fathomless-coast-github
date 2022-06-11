@@ -245,7 +245,8 @@ input#share_url {
   opacity: 1;
 }
 
-button#copy_url_button {
+button#copy_url_button,
+button#share_whatsapp {
   border: 1px solid lightgray;
   height: 2em;
   border: 1px solid #ccc;
