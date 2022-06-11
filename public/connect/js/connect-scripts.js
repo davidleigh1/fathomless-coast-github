@@ -888,6 +888,18 @@ function openSettingsCombined(requestingUser){
     const beepVolume = connect.beepVolume;
     $("label").find('input[name="beep-volume"][value="' + beepVolume + '"]').click();
 
+    const lspn = localStorage.getItem("thisPlayerName") || "Not found";
+    $("#localstorage-thisPlayerName").html(lspn);
+
+    const lsconnect = localStorage.getItem("connect") || "Not found";
+    $("#localstorage-connect").html(lsconnect);
+
+    const windowconnect = connect || "Not found";
+    $("#window-connect").html(JSON.stringify(windowconnect, null, 2));
+    
+
+
+
     // After declaring all the handlers - don't forget to actually show the modal! 
     $("#playerSettingsModal").modal({backdrop: 'static', keyboard: false});
 

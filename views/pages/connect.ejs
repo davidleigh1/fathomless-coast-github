@@ -311,6 +311,7 @@
 
                         <div class="modal-body form-horizontal_X">
                             <form id="settingsModalForm" class="form-horizontal" role="form">
+                                <!-- Username -->
                                 <div class="form-group">
                                     <label for="player1" class="control-label_X col-xs-2">
                                         Your name
@@ -320,18 +321,7 @@
                                     <input tabindex="1" type="text" class="form-control" id="player1_name" placeholder="Your screen name" required="required"  oninvalid="alert('Missing a valid name for Player #1');this.focus();" >
                                     </div>
                                 </div>
-                                <!-- <div class="form-group">
-                                    <label for="player2" class="control-label_X col-xs-2">Beep Volume</label>
-                                    <div class="col-xs-8">
-                                        <div class="btn-group" role="group" aria-label="Basic example">
-                                            <button type="button" class="btn btn-outline-secondary">Off (0%)</button>
-                                            <button type="button" class="btn btn-outline-secondary" checked>Low (10%)</button>
-                                            <button type="button" class="btn btn-outline-secondary">Mid (50%)</button>
-                                            <button type="button" class="btn btn-outline-secondary">Full (100%)</button>
-                                        </div>
-                                        <input tabindex="2" type="text" class="form-control" id="player2_name" placeholder="Screen name for Player 2" required="required" oninvalid="alert('Missing a valid name for Player #2');this.focus();">
-                                    </div>
-                                </div> -->
+                                <!-- Volume -->
                                 <div class="form-group">
                                     <label for="player2" class="control-label_X col-xs-2" onclick="testBeep();">Beep Volume
                                         <div class="label-comment">Click above to test</div>
@@ -354,6 +344,34 @@
                                               <input type="radio" name="beep-volume" id="beep-volume-full" value="100" autocomplete="off"> Full (100%)
                                             </label>
                                           </div>
+                                    </div>
+                                </div>
+                                <!-- Storage -->
+                                <div class="form-group">
+                                    <label class="">LocalStorage</label>
+                                    <div class="col-10">
+                                        <code>localStorage.getItem("thisPlayerName")</code>
+                                    </div>
+                                    <div class="col-10">
+                                        <div class="storage code code-style">
+                                            <pre><code><span id="localstorage-thisPlayerName">// localStorage > thisPlayerName</span></code></pre>
+                                        </div>
+                                    </div>
+                                    <div class="col-10">
+                                        <code>localStorage.getItem("connect")</code>
+                                    </div>
+                                    <div class="col-10">
+                                        <div class="storage code code-style">
+                                            <pre><code><span id="localstorage-connect">// localStorage > connect</span></code></pre>
+                                        </div>
+                                    </div>
+                                    <div class="col-10">
+                                        <code>connect</code>
+                                    </div>
+                                    <div class="col-10">
+                                        <div class="storage code code-style">
+                                            <pre><code><span id="window-connect">// window > connect</span></code></pre>
+                                        </div>
                                     </div>
                                 </div>
                             </form>
